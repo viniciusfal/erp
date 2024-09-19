@@ -1,0 +1,23 @@
+services:
+  finances-app:
+    container_name: finances-app
+    image: go-api-finances
+    build: .
+    ports:
+      - "8000:8000"
+    depends_on:
+      - finances_db
+  finances_db:
+    container_name: finances_db
+    image: postgres:12
+    environment:
+      POSTGRES_PASSWORD: 1234
+      POSTGRES_USER: postgres
+      POSTGRES_DB: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+volumes:
+  pgdata: {}
