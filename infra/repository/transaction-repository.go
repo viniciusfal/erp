@@ -3,7 +3,7 @@ package repository
 import (
 	"database/sql"
 
-	"github.com/viniciusfal/finances/model"
+	"github.com/viniciusfal/erp/infra/model"
 )
 
 type TransactionRepository struct {
@@ -19,9 +19,9 @@ func NewTransactionRepository(connection *sql.DB) TransactionRepository {
 func (tr *TransactionRepository) CreateTransaction(transaction model.Transaction) (string, error) {
 	var id string
 
-	query, err := tr.connection.Prepare("INSERT INTO transaction" +
-		"(title, value, type, category, scheduling, payment_date) " +
-		"VALUES($1, $2, $3, $4, $5, $6) RETURNING id")
+	query, err := tr.connection.Prepare("INSERT INTO transactions" +
+		"(id, title, value, type, category, scheduling, payment_date) " +
+		"VALUES(gen_random_uuid(), $1, $2, $3, $4, $5, $6) RETURNING id")
 
 	if err != nil {
 		println(err)

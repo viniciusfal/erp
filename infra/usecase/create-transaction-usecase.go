@@ -3,9 +3,8 @@ package usecase
 import (
 	"time"
 
-	"github.com/google/uuid"
-	"github.com/viniciusfal/finances/model"
-	"github.com/viniciusfal/finances/repository"
+	"github.com/viniciusfal/erp/infra/model"
+	"github.com/viniciusfal/erp/infra/repository"
 )
 
 type TransactionUseCase struct {
@@ -24,7 +23,6 @@ func (tu *TransactionUseCase) CreateTransaction(transaction model.Transaction) (
 		return model.Transaction{}, err
 	}
 
-	transaction.ID = uuid.NewString()
 	transaction.Created_at = time.Now()
 
 	return transaction, nil

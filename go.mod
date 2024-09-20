@@ -1,4 +1,4 @@
-module github.com/viniciusfal/finances
+module github.com/viniciusfal/erp
 
 go 1.23.1
 
