@@ -16,5 +16,5 @@ func NewListTransactionUseCase(repo repository.TransactionRepository) ListTransa
 }
 
 func (tu *ListTransactionUseCase) GetTransactions() ([]model.Transaction, error) {
-	return tu.repository.GetProducts()
+	return tu.repository.GetTransactions()
 }

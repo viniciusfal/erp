@@ -14,7 +14,7 @@ func main() {
 		})
 	})
 
-	routes.TransactionRoutes()
+	routes.TransactionRoutes(server)
 
 	server.Run(":8000")
 }

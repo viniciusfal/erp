@@ -40,7 +40,7 @@ func (tr *TransactionRepository) CreateTransaction(transaction model.Transaction
 	return id, nil
 }
 
-func (tr *TransactionRepository) GetProducts() ([]model.Transaction, error) {
+func (tr *TransactionRepository) GetTransactions() ([]model.Transaction, error) {
 	var transactions []model.Transaction
 
 	query := "SELECT * FROM transactions"
