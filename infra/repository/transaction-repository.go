@@ -38,5 +38,41 @@ func (tr *TransactionRepository) CreateTransaction(transaction model.Transaction
 	query.Close()
 
 	return id, nil
+}
+
+func (tr *TransactionRepository) GetProducts() ([]model.Transaction, error) {
+	var transactions []model.Transaction
+
+	query := "SELECT * FROM transactions"
+	rows, err := tr.connection.Query(query)
+	if err != nil {
+		println(err)
+		return []model.Transaction{}, err
+	}
+
+	for rows.Next() {
+		var transaction model.Transaction
+		err = rows.Scan(
+			&transaction.ID,
+			&transaction.Title,
+			&transaction.Annex,
+			&transaction.Category,
+			&transaction.Type,
+			&transaction.Payment_date,
+			&transaction.Created_at,
+			&transaction.Updated_at,
+		)
+
+		if err != nil {
+			println(err)
+			return []model.Transaction{}, err
+		}
+
+		transactions = append(transactions, transaction)
+	}
+
+	rows.Close()
+
+	return transactions, nil
 
 }

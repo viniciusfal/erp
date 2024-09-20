@@ -6,7 +6,7 @@ import (
 )
 
 func main() {
-	Server := gin.Default()
+	server := gin.Default()
 
 	server.GET("/ping", func(ctx *gin.Context) {
 		ctx.JSON(200, gin.H{

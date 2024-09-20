@@ -8,17 +8,17 @@ import (
 	"github.com/viniciusfal/erp/infra/usecase"
 )
 
-type transactionController struct {
+type TransactionController struct {
 	transactionUseCase usecase.TransactionUseCase
 }
 
-func NewTransactionController(usecase usecase.TransactionUseCase) transactionController {
-	return transactionController{
+func NewTransactionController(usecase usecase.TransactionUseCase) TransactionController {
+	return TransactionController{
 		transactionUseCase: usecase,
 	}
 }
 
-func (tc *transactionController) CreateTransaction(ctx *gin.Context) {
+func (tc *TransactionController) CreateTransaction(ctx *gin.Context) {
 	var transaction model.Transaction
 
 	err := ctx.BindJSON(&transaction)
@@ -35,5 +35,4 @@ func (tc *transactionController) CreateTransaction(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusCreated, insertedTransaction)
-
 }
