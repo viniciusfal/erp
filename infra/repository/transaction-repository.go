@@ -2,6 +2,7 @@ package repository
 
 import (
 	"database/sql"
+	"fmt"
 
 	"github.com/viniciusfal/erp/infra/model"
 )
@@ -41,7 +42,6 @@ func (tr *TransactionRepository) CreateTransaction(transaction model.Transaction
 }
 
 func (tr *TransactionRepository) GetTransactions() ([]model.Transaction, error) {
-	var transactions []model.Transaction
 
 	query := "SELECT * FROM transactions"
 	rows, err := tr.connection.Query(query)
@@ -50,22 +50,32 @@ func (tr *TransactionRepository) GetTransactions() ([]model.Transaction, error) 
 		return []model.Transaction{}, err
 	}
 
+	var transactions []model.Transaction
+
 	for rows.Next() {
 		var transaction model.Transaction
+		var annex *string
+
 		err = rows.Scan(
 			&transaction.ID,
 			&transaction.Title,
-			&transaction.Annex,
-			&transaction.Category,
+			&transaction.Value,
 			&transaction.Type,
+			&transaction.Category,
+			&transaction.Scheduling,
+			&annex,
 			&transaction.Payment_date,
 			&transaction.Created_at,
 			&transaction.Updated_at,
 		)
 
 		if err != nil {
-			println(err)
+			fmt.Println(err)
 			return []model.Transaction{}, err
+		}
+
+		if annex != nil {
+			transaction.Annex = *annex
 		}
 
 		transactions = append(transactions, transaction)
