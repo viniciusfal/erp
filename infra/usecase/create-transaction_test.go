@@ -22,7 +22,7 @@ func TestCreateTransaction(t *testing.T) {
 		Type:         "entrada",
 		Category:     "Vendas Guichê",
 		Scheduling:   false,
-		Annex:        "",
+		Annex:        nil,
 		Payment_date: nil,
 		Created_at:   time.Now(),
 		Updated_at:   time.Now(),

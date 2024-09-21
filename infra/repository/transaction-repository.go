@@ -42,7 +42,6 @@ func (tr *TransactionRepository) CreateTransaction(transaction model.Transaction
 }
 
 func (tr *TransactionRepository) GetTransactions() ([]model.Transaction, error) {
-
 	query := "SELECT * FROM transactions"
 	rows, err := tr.connection.Query(query)
 	if err != nil {
@@ -54,7 +53,6 @@ func (tr *TransactionRepository) GetTransactions() ([]model.Transaction, error) 
 
 	for rows.Next() {
 		var transaction model.Transaction
-		var annex *string
 
 		err = rows.Scan(
 			&transaction.ID,
@@ -63,7 +61,7 @@ func (tr *TransactionRepository) GetTransactions() ([]model.Transaction, error) 
 			&transaction.Type,
 			&transaction.Category,
 			&transaction.Scheduling,
-			&annex,
+			&transaction.Annex,
 			&transaction.Payment_date,
 			&transaction.Created_at,
 			&transaction.Updated_at,
@@ -74,15 +72,45 @@ func (tr *TransactionRepository) GetTransactions() ([]model.Transaction, error) 
 			return []model.Transaction{}, err
 		}
 
-		if annex != nil {
-			transaction.Annex = *annex
-		}
-
 		transactions = append(transactions, transaction)
 	}
 
 	rows.Close()
 
 	return transactions, nil
+}
 
+func (tr *TransactionRepository) GetTransactionById(transaction_id string) (*model.Transaction, error) {
+	query, err := tr.connection.Prepare("SELECT * FROM transactions WHERE id = $1")
+	if err != nil {
+		fmt.Println(err)
+		return nil, err
+	}
+
+	var transaction model.Transaction
+
+	err = query.QueryRow(transaction_id).Scan(
+		&transaction.ID,
+		&transaction.Title,
+		&transaction.Value,
+		&transaction.Type,
+		&transaction.Category,
+		&transaction.Scheduling,
+		&transaction.Annex,
+		&transaction.Payment_date,
+		&transaction.Created_at,
+		&transaction.Updated_at,
+	)
+
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, err
+		}
+
+		return nil, err
+	}
+
+	query.Close()
+
+	return &transaction, nil
 }

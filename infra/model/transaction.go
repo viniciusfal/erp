@@ -11,7 +11,7 @@ type Transaction struct {
 	Type         string     `json:"type"`
 	Category     string     `json:"category"`
 	Scheduling   bool       `json:"scheduling"`
-	Annex        string     `json:"annex"`
+	Annex        *string    `json:"annex"`
 	Payment_date *time.Time `json:"payment_date"`
 	Created_at   time.Time  `json:"created_at"`
 	Updated_at   time.Time  `json:"updated_at"`
