@@ -8,12 +8,6 @@ import (
 func main() {
 	server := gin.Default()
 
-	server.GET("/ping", func(ctx *gin.Context) {
-		ctx.JSON(200, gin.H{
-			"message": "pong",
-		})
-	})
-
 	routes.TransactionRoutes(server)
 
 	server.Run(":8000")
