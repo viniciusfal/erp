@@ -114,3 +114,47 @@ func (tr *TransactionRepository) GetTransactionById(transaction_id string) (*mod
 
 	return &transaction, nil
 }
+
+func (tr *TransactionRepository) SetTransaction(transaction *model.Transaction) (*model.Transaction, error) {
+
+	// old Transaction
+	_, err := tr.GetTransactionById(transaction.ID)
+	if err != nil {
+		fmt.Println(err)
+		return nil, err
+	}
+
+	// Transaction
+
+	// Update Transaction
+	query, err := tr.connection.Prepare(`
+		UPDATE transactions
+		SET 
+			title = $1,
+			value = $2,
+			type = $3,
+			category = $4,
+			scheduling = $5,
+			annex = $6,
+			payment_date = $7,
+			updated_at = NOW()
+		WHERE
+			id = $8
+			`)
+	if err != nil {
+		fmt.Println(err)
+		return nil, err
+	}
+
+	_, err = query.Exec(transaction.Title, transaction.Value, transaction.Type, transaction.Category,
+		transaction.Scheduling, transaction.Annex, transaction.Payment_date, transaction.ID)
+	if err != nil {
+		fmt.Println(err)
+		return nil, err
+	}
+
+	query.Close()
+
+	return transaction, nil
+
+}
