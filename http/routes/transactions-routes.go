@@ -10,9 +10,11 @@ func TransactionRoutes(router *gin.Engine) {
 	TransactionController := factories.MakeTransactions()
 	GetTransactionByIdController := factories.MakeGetTransactionById()
 	SetTransactionController := factories.MakeSetTransaction()
+	RemoveTransactionController := factories.MakeRemoveTransaction()
 
 	router.GET("/transactions", ListTransactionsController.GetTransactions)
 	router.POST("/transaction", TransactionController.CreateTransaction)
 	router.GET("/transaction/:transactionId", GetTransactionByIdController.GetTransactionById)
 	router.PUT("/transaction/:transactionId", SetTransactionController.SetTransaction)
+	router.DELETE("transaction/:transactionId", RemoveTransactionController.RemoveTransaction)
 }

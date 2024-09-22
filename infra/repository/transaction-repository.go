@@ -158,3 +158,25 @@ func (tr *TransactionRepository) SetTransaction(transaction *model.Transaction) 
 	return transaction, nil
 
 }
+
+func (tr *TransactionRepository) RemoveTransaction(transaction_id string) error {
+	_, err := tr.GetTransactionById(transaction_id)
+	if err != nil {
+		fmt.Println(err)
+		return err
+	}
+	query, err := tr.connection.Prepare("DELETE FROM transactions WHERE id = $1")
+	if err != nil {
+		fmt.Println(err)
+		return err
+	}
+	defer query.Close()
+
+	_, err = query.Exec(transaction_id)
+	if err != nil {
+		fmt.Println(err)
+		return err
+	}
+
+	return nil
+}
