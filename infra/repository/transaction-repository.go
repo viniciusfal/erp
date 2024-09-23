@@ -3,6 +3,7 @@ package repository
 import (
 	"database/sql"
 	"fmt"
+	"time"
 
 	"github.com/viniciusfal/erp/infra/model"
 )
@@ -42,6 +43,7 @@ func (tr *TransactionRepository) CreateTransaction(transaction model.Transaction
 }
 
 func (tr *TransactionRepository) GetTransactions() ([]model.Transaction, error) {
+
 	query := "SELECT * FROM transactions"
 	rows, err := tr.connection.Query(query)
 	if err != nil {
@@ -81,6 +83,7 @@ func (tr *TransactionRepository) GetTransactions() ([]model.Transaction, error) 
 }
 
 func (tr *TransactionRepository) GetTransactionById(transaction_id string) (*model.Transaction, error) {
+
 	query, err := tr.connection.Prepare("SELECT * FROM transactions WHERE id = $1")
 	if err != nil {
 		fmt.Println(err)
@@ -115,6 +118,50 @@ func (tr *TransactionRepository) GetTransactionById(transaction_id string) (*mod
 	return &transaction, nil
 }
 
+func (tr *TransactionRepository) GetTransactionsByDate(startDate time.Time, endDate time.Time) ([]*model.Transaction, error) {
+
+	query := "SELECT * FROM transactions WHERE payment_date BETWEEN $1 AND $2"
+
+	rows, err := tr.connection.Query(query, startDate, endDate)
+	if err != nil {
+		fmt.Println(err)
+		return []*model.Transaction{}, err
+	}
+	defer rows.Close()
+
+	var transactions []*model.Transaction
+
+	for rows.Next() {
+		var transaction model.Transaction
+
+		err = rows.Scan(
+			&transaction.ID,
+			&transaction.Title,
+			&transaction.Value,
+			&transaction.Type,
+			&transaction.Category,
+			&transaction.Scheduling,
+			&transaction.Annex,
+			&transaction.Payment_date,
+			&transaction.Created_at,
+			&transaction.Updated_at,
+		)
+		if err != nil {
+			fmt.Println(err)
+			return []*model.Transaction{}, err
+		}
+
+		transactions = append(transactions, &transaction)
+	}
+
+	if err = rows.Err(); err != nil {
+		fmt.Println(err)
+		return []*model.Transaction{}, err
+	}
+
+	return transactions, nil
+}
+
 func (tr *TransactionRepository) SetTransaction(transaction *model.Transaction) (*model.Transaction, error) {
 
 	// old Transaction
@@ -123,8 +170,6 @@ func (tr *TransactionRepository) SetTransaction(transaction *model.Transaction) 
 		fmt.Println(err)
 		return nil, err
 	}
-
-	// Transaction
 
 	// Update Transaction
 	query, err := tr.connection.Prepare(`
@@ -156,7 +201,6 @@ func (tr *TransactionRepository) SetTransaction(transaction *model.Transaction) 
 	query.Close()
 
 	return transaction, nil
-
 }
 
 func (tr *TransactionRepository) RemoveTransaction(transaction_id string) error {
