@@ -125,7 +125,7 @@ func (tr *TransactionRepository) GetTransactionsByDate(startDate time.Time, endD
 	rows, err := tr.connection.Query(query, startDate, endDate)
 	if err != nil {
 		fmt.Println(err)
-		return []*model.Transaction{}, err
+		return nil, err
 	}
 	defer rows.Close()
 
@@ -148,15 +148,15 @@ func (tr *TransactionRepository) GetTransactionsByDate(startDate time.Time, endD
 		)
 		if err != nil {
 			fmt.Println(err)
-			return []*model.Transaction{}, err
+			return nil, err
 		}
 
 		transactions = append(transactions, &transaction)
-	}
 
+	}
 	if err = rows.Err(); err != nil {
 		fmt.Println(err)
-		return []*model.Transaction{}, err
+		return nil, err
 	}
 
 	return transactions, nil

@@ -16,10 +16,3 @@ type Transaction struct {
 	Created_at   time.Time  `json:"created_at"`
 	Updated_at   time.Time  `json:"updated_at"`
 }
-
-func (t Transaction) PaymentDateFormat() string {
-	if t.Payment_date != nil {
-		return t.Payment_date.Format("2006-01-02")
-	}
-	return ""
-}

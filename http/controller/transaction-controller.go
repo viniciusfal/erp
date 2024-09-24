@@ -34,24 +34,6 @@ func (tc *TransactionController) CreateTransaction(ctx *gin.Context) {
 		return
 	}
 
-	formattedPaymentDate := ""
-	if insertedTransaction.Payment_date != nil {
-		formattedPaymentDate = insertedTransaction.PaymentDateFormat()
-	}
-
-	response := gin.H{
-		"transaction_id": insertedTransaction.ID,
-		"title":          insertedTransaction.Title,
-		"value":          insertedTransaction.Value,
-		"type":           insertedTransaction.Type,
-		"category":       insertedTransaction.Category,
-		"scheduling":     insertedTransaction.Scheduling,
-		"annex":          insertedTransaction.Annex,
-		"payment_date":   formattedPaymentDate,
-		"created_at":     insertedTransaction.Created_at,
-		"updated_at":     insertedTransaction.Updated_at,
-	}
-
-	ctx.JSON(http.StatusCreated, response)
+	ctx.JSON(http.StatusCreated, insertedTransaction)
 
 }

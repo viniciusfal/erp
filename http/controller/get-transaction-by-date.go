@@ -30,21 +30,14 @@ func (tc *GetTransactionByDateController) GetTransactionByDate(ctx *gin.Context)
 		ctx.JSON(http.StatusBadRequest, err)
 		return
 	}
+	formattedStartDate, _ := time.Parse("2006-01-02", request.StartDate)
+	formattedEndDate, _ := time.Parse("2006-01-02", request.EndDate)
 
-	startFormattedDate, err := time.Parse("2006-01-02", request.StartDate)
-	if err != nil {
-		println(err)
-		return
-	}
-
-	endFormattedDate, err := time.Parse("2006-01-02", request.EndDate)
-
-	transactions, err := tc.getTransactionByDateUseCase.GetTransactionByDate(startFormattedDate, endFormattedDate)
+	transactions, err := tc.getTransactionByDateUseCase.GetTransactionByDate(formattedStartDate, formattedEndDate)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, err)
 		return
 	}
 
 	ctx.JSON(http.StatusOK, transactions)
-
 }
