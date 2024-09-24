@@ -19,4 +19,5 @@ func TransactionRoutes(router *gin.Engine) {
 	router.GET("/transactions/by-date", GetTransactionByDateController.GetTransactionByDate)
 	router.PUT("/transaction/:transactionId", SetTransactionController.SetTransaction)
 	router.DELETE("transaction/:transactionId", RemoveTransactionController.RemoveTransaction)
+	router.POST("/transaction")
 }
