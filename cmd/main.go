@@ -9,6 +9,7 @@ func main() {
 	server := gin.Default()
 
 	routes.TransactionRoutes(server)
+	routes.UserRoutes(server)
 
 	server.Run(":8000")
 }
