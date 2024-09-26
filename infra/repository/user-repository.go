@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/viniciusfal/erp/infra/model"
+	"github.com/viniciusfal/erp/services"
 )
 
 type UserRepository struct {
@@ -110,4 +111,31 @@ func (ur *UserRepository) GetUserById(id string) (*model.User, error) {
 	}
 
 	return &user, nil
+}
+
+func (ur *UserRepository) CreateSession(email string, password string) (*model.Session, error) {
+
+	var user model.User
+	var sess model.Session
+
+	query, err := ur.connection.Prepare("SELECT email, password FROM users WHERE email = $1 AND password = $2")
+	if err != nil {
+		fmt.Println(err)
+		return nil, err
+	}
+	defer query.Close()
+
+	err = query.QueryRow(sess.Email, sess.Password).Scan(&sess)
+
+	if err != nil {
+		fmt.Println(err)
+		return nil, err
+	}
+
+	if user.Password != services.SHA256Encoder(sess.Password) {
+		panic("Invalid Credentials")
+	}
+
+	return &sess, nil
+
 }
