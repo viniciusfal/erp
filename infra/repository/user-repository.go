@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/viniciusfal/erp/infra/model"
+	"github.com/viniciusfal/erp/services"
 )
 
 type UserRepository struct {
@@ -109,5 +110,28 @@ func (ur *UserRepository) GetUserById(id string) (*model.User, error) {
 		return nil, err
 	}
 
+	return &user, nil
+}
+
+func (ur *UserRepository) CreateSession(email string, password string) (*model.User, error) {
+	var user model.User
+
+	// Prepare a consulta usando o email
+	query := "SELECT id, email, password, name, rope FROM users WHERE email = $1"
+	err := ur.connection.QueryRow(query, email).Scan(&user.ID, &user.Email, &user.Password, &user.Name, &user.Rope)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			// Se não encontrar nenhum usuário, retorne um erro apropriado
+			return nil, fmt.Errorf("user not found")
+		}
+		return nil, err // Retorna o erro da consulta
+	}
+
+	// Verifica se a senha está correta
+	if user.Password != services.SHA256Encoder(password) {
+		return nil, fmt.Errorf("invalid credentials") // Retorna erro de credenciais inválidas
+	}
+
+	// Retorna o usuário autenticado
 	return &user, nil
 }

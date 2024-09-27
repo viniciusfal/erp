@@ -3,6 +3,7 @@ package routes
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/viniciusfal/erp/factories"
+	"github.com/viniciusfal/erp/http/middleware"
 	"github.com/viniciusfal/erp/lib"
 )
 
@@ -14,11 +15,14 @@ func TransactionRoutes(router *gin.Engine) {
 	SetTransactionController := factories.MakeSetTransaction()
 	RemoveTransactionController := factories.MakeRemoveTransaction()
 
-	router.GET("/transactions", ListTransactionsController.GetTransactions)
-	router.POST("/transaction", TransactionController.CreateTransaction)
-	router.GET("/transaction/:transactionId", GetTransactionByIdController.GetTransactionById)
-	router.GET("/transactions/by-date", GetTransactionByDateController.GetTransactionByDate)
-	router.PUT("/transaction/:transactionId", SetTransactionController.SetTransaction)
-	router.DELETE("/transaction/:transactionId", RemoveTransactionController.RemoveTransaction)
-	router.POST("/transaction/upload", lib.Upload)
+	transactionGroup := router.Group("/transaction", middleware.Auth())
+	{
+		transactionGroup.GET("/", ListTransactionsController.GetTransactions)
+		transactionGroup.POST("/", TransactionController.CreateTransaction)
+		transactionGroup.GET("/:transactionId", GetTransactionByIdController.GetTransactionById)
+		transactionGroup.GET("/by-date", GetTransactionByDateController.GetTransactionByDate)
+		transactionGroup.PUT("/:transactionId", SetTransactionController.SetTransaction)
+		transactionGroup.DELETE("/:transactionId", RemoveTransactionController.RemoveTransaction)
+		transactionGroup.POST("/upload", lib.Upload)
+	}
 }
