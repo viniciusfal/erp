@@ -113,29 +113,25 @@ func (ur *UserRepository) GetUserById(id string) (*model.User, error) {
 	return &user, nil
 }
 
-func (ur *UserRepository) CreateSession(email string, password string) (*model.Session, error) {
-
+func (ur *UserRepository) CreateSession(email string, password string) (*model.User, error) {
 	var user model.User
-	var sess model.Session
 
-	query, err := ur.connection.Prepare("SELECT email, password FROM users WHERE email = $1 AND password = $2")
+	// Prepare a consulta usando o email
+	query := "SELECT id, email, password, name, rope FROM users WHERE email = $1"
+	err := ur.connection.QueryRow(query, email).Scan(&user.ID, &user.Email, &user.Password, &user.Name, &user.Rope)
 	if err != nil {
-		fmt.Println(err)
-		return nil, err
-	}
-	defer query.Close()
-
-	err = query.QueryRow(sess.Email, sess.Password).Scan(&sess)
-
-	if err != nil {
-		fmt.Println(err)
-		return nil, err
+		if err == sql.ErrNoRows {
+			// Se não encontrar nenhum usuário, retorne um erro apropriado
+			return nil, fmt.Errorf("user not found")
+		}
+		return nil, err // Retorna o erro da consulta
 	}
 
-	if user.Password != services.SHA256Encoder(sess.Password) {
-		panic("Invalid Credentials")
+	// Verifica se a senha está correta
+	if user.Password != services.SHA256Encoder(password) {
+		return nil, fmt.Errorf("invalid credentials") // Retorna erro de credenciais inválidas
 	}
 
-	return &sess, nil
-
+	// Retorna o usuário autenticado
+	return &user, nil
 }

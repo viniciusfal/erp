@@ -1,7 +1,6 @@
 package controller
 
 import (
-	"log"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -22,17 +21,16 @@ func NewCreateSessionController(usecase usecase.SessionUseCase) CreateSessionCon
 
 func (uc *CreateSessionController) CreateSession(ctx *gin.Context) {
 	var session model.Session
-	var user model.User
 
 	err := ctx.BindJSON(&session)
-
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, err)
 		return
 	}
 
-	if user.Password != services.SHA256Encoder(session.Password) {
-		log.Fatal("invalid credentials")
+	user, err := uc.sessionUseCase.CreateSession(session.Email, session.Password)
+	if err != nil {
+		ctx.JSON(http.StatusUnauthorized, err.Error())
 		return
 	}
 

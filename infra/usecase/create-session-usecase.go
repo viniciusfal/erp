@@ -15,11 +15,11 @@ func NewSessionUseCase(repo repository.UserRepository) SessionUseCase {
 	}
 }
 
-func (uu *UserUseCase) CreateSession(session model.Session) (*model.Session, error) {
-	_, err := uu.repository.CreateSession(session.Email, session.Password)
+func (uu *SessionUseCase) CreateSession(email string, password string) (*model.User, error) {
+	user, err := uu.repository.CreateSession(email, password)
 	if err != nil {
 		return nil, err
 	}
 
-	return &session, nil
+	return user, nil
 }
