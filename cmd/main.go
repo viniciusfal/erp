@@ -12,9 +12,9 @@ func main() {
 	server := gin.Default()
 
 	server.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{"http://localhost:8000"},
+		AllowOrigins:     []string{"http://localhost:5173"},
 		AllowMethods:     []string{"PUT, PATCH, GET, POST, DELETE"},
-		AllowHeaders:     []string{"origin"},
+		AllowHeaders:     []string{"origin", "Content-Type", "Authorization"},
 		ExposeHeaders:    []string{"Content-Length"},
 		AllowCredentials: true,
 		MaxAge:           12 * time.Hour,
