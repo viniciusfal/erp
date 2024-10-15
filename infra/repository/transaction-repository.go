@@ -22,8 +22,8 @@ func (tr *TransactionRepository) CreateTransaction(transaction model.Transaction
 	var id string
 
 	query, err := tr.connection.Prepare("INSERT INTO transactions" +
-		"(id, title, value, type, category, scheduling, payment_date) " +
-		"VALUES(gen_random_uuid(), $1, $2, $3, $4, $5, $6) RETURNING id")
+		"(id, title, value, type, category, scheduling, payment_date, pay) " +
+		"VALUES(gen_random_uuid(), $1, $2, $3, $4, $5, $6, $7) RETURNING id")
 
 	if err != nil {
 		println(err)
@@ -31,7 +31,7 @@ func (tr *TransactionRepository) CreateTransaction(transaction model.Transaction
 	}
 
 	err = query.QueryRow(transaction.Title, transaction.Value, transaction.Type,
-		transaction.Category, transaction.Scheduling, transaction.Payment_date).Scan(&id)
+		transaction.Category, transaction.Scheduling, transaction.Payment_date, transaction.Pay).Scan(&id)
 	if err != nil {
 		println(err)
 		return "", err
@@ -67,6 +67,7 @@ func (tr *TransactionRepository) GetTransactions() ([]model.Transaction, error) 
 			&transaction.Payment_date,
 			&transaction.Created_at,
 			&transaction.Updated_at,
+			&transaction.Pay,
 		)
 
 		if err != nil {
@@ -103,6 +104,7 @@ func (tr *TransactionRepository) GetTransactionById(transaction_id string) (*mod
 		&transaction.Payment_date,
 		&transaction.Created_at,
 		&transaction.Updated_at,
+		&transaction.Pay,
 	)
 
 	if err != nil {
@@ -145,6 +147,7 @@ func (tr *TransactionRepository) GetTransactionsByDate(startDate time.Time, endD
 			&transaction.Payment_date,
 			&transaction.Created_at,
 			&transaction.Updated_at,
+			&transaction.Pay,
 		)
 		if err != nil {
 			fmt.Println(err)
@@ -182,9 +185,10 @@ func (tr *TransactionRepository) SetTransaction(transaction *model.Transaction) 
 			scheduling = $5,
 			annex = $6,
 			payment_date = $7,
-			updated_at = NOW()
+			updated_at = NOW(),
+			pay = $8,
 		WHERE
-			id = $8
+			id = $9
 			`)
 	if err != nil {
 		fmt.Println(err)
@@ -192,7 +196,7 @@ func (tr *TransactionRepository) SetTransaction(transaction *model.Transaction) 
 	}
 
 	_, err = query.Exec(transaction.Title, transaction.Value, transaction.Type, transaction.Category,
-		transaction.Scheduling, transaction.Annex, transaction.Payment_date, transaction.ID)
+		transaction.Scheduling, transaction.Annex, transaction.Payment_date, transaction.Pay, transaction.ID)
 	if err != nil {
 		fmt.Println(err)
 		return nil, err
@@ -223,4 +227,30 @@ func (tr *TransactionRepository) RemoveTransaction(transaction_id string) error 
 	}
 
 	return nil
+}
+
+func (tr *TransactionRepository) MarkPayment(transaction_id string) (string, error) {
+	// old Transaction
+	_, err := tr.GetTransactionById(transaction_id)
+	if err != nil {
+		fmt.Println(err)
+		return "nil", err
+	}
+
+	query, err := tr.connection.Prepare(`UPDATE transactions SET pay = $1 WHERE id = $2`)
+	if err != nil {
+		fmt.Println(err)
+		return "nil", err
+	}
+
+	defer query.Close()
+
+	_, err = query.Exec(true, transaction_id)
+	if err != nil {
+		fmt.Println(err)
+		return "nil", err
+	}
+
+	return transaction_id, nil
+
 }

@@ -3,7 +3,6 @@ package routes
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/viniciusfal/erp/factories"
-	"github.com/viniciusfal/erp/http/middleware"
 	"github.com/viniciusfal/erp/lib"
 )
 
@@ -14,8 +13,9 @@ func TransactionRoutes(router *gin.Engine) {
 	GetTransactionByDateController := factories.MakeGetTransactionByDate()
 	SetTransactionController := factories.MakeSetTransaction()
 	RemoveTransactionController := factories.MakeRemoveTransaction()
+	MarkPaymentController := factories.MakeMarkPayment()
 
-	transactionGroup := router.Group("/transaction", middleware.Auth())
+	transactionGroup := router.Group("/transaction")
 	{
 		transactionGroup.GET("/", ListTransactionsController.GetTransactions)
 		transactionGroup.POST("/", TransactionController.CreateTransaction)
@@ -24,5 +24,6 @@ func TransactionRoutes(router *gin.Engine) {
 		transactionGroup.PUT("/:transactionId", SetTransactionController.SetTransaction)
 		transactionGroup.DELETE("/:transactionId", RemoveTransactionController.RemoveTransaction)
 		transactionGroup.POST("/upload", lib.Upload)
+		transactionGroup.PATCH("/:transactionId", MarkPaymentController.MarkPayment)
 	}
 }
