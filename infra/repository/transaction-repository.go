@@ -186,7 +186,7 @@ func (tr *TransactionRepository) SetTransaction(transaction *model.Transaction) 
 			annex = $6,
 			payment_date = $7,
 			updated_at = NOW(),
-			pay = $8,
+			pay = $8
 		WHERE
 			id = $9
 			`)
