@@ -19,19 +19,11 @@ func NewGetTransactionByDateController(usecase usecase.GetTransactionByDateUseCa
 }
 
 func (tc *GetTransactionByDateController) GetTransactionByDate(ctx *gin.Context) {
-	var request struct {
-		StartDate string `json:"start_date"`
-		EndDate   string `json:"end_date"`
-	}
+	startDate := ctx.Param("startDate")
+	endDate := ctx.Param("endDate")
 
-	err := ctx.BindJSON(&request)
-
-	if err != nil {
-		ctx.JSON(http.StatusBadRequest, err)
-		return
-	}
-	formattedStartDate, _ := time.Parse("2006-01-02", request.StartDate)
-	formattedEndDate, _ := time.Parse("2006-01-02", request.EndDate)
+	formattedStartDate, _ := time.Parse("2006-01-02", startDate)
+	formattedEndDate, _ := time.Parse("2006-01-02", endDate)
 
 	transactions, err := tc.getTransactionByDateUseCase.GetTransactionByDate(formattedStartDate, formattedEndDate)
 	if err != nil {

@@ -20,7 +20,7 @@ func TransactionRoutes(router *gin.Engine) {
 		transactionGroup.GET("/", ListTransactionsController.GetTransactions)
 		transactionGroup.POST("/", TransactionController.CreateTransaction)
 		transactionGroup.GET("/:transactionId", GetTransactionByIdController.GetTransactionById)
-		transactionGroup.GET("/by-date", GetTransactionByDateController.GetTransactionByDate)
+		transactionGroup.GET("/byDate/:startDate/:endDate", GetTransactionByDateController.GetTransactionByDate)
 		transactionGroup.PUT("/:transactionId", SetTransactionController.SetTransaction)
 		transactionGroup.DELETE("/:transactionId", RemoveTransactionController.RemoveTransaction)
 		transactionGroup.POST("/upload", lib.Upload)
