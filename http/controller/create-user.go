@@ -23,7 +23,6 @@ func (uc *CreateUserController) CreateUser(ctx *gin.Context) {
 	var user model.User
 
 	err := ctx.BindJSON(&user)
-
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, err)
 		return

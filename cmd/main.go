@@ -22,6 +22,7 @@ func main() {
 
 	routes.TransactionRoutes(server)
 	routes.UserRoutes(server)
+	routes.MetaRoutes(server)
 
 	server.Run(":8000")
 }

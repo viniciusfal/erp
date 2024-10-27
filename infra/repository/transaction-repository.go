@@ -26,7 +26,7 @@ func (tr *TransactionRepository) CreateTransaction(transaction model.Transaction
 		"VALUES(gen_random_uuid(), $1, $2, $3, $4, $5, $6, $7) RETURNING id")
 
 	if err != nil {
-		println(err)
+		fmt.Println(err)
 		return "", err
 	}
 
