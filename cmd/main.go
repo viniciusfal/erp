@@ -23,6 +23,7 @@ func main() {
 	routes.TransactionRoutes(server)
 	routes.UserRoutes(server)
 	routes.MetaRoutes(server)
+	routes.SafeRoutes(server)
 
 	server.Run(":8000")
 }

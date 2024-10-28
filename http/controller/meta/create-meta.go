@@ -5,7 +5,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/viniciusfal/erp/infra/model"
-	"github.com/viniciusfal/erp/infra/usecase"
+	usecase "github.com/viniciusfal/erp/infra/usecase/meta"
 )
 
 type CreateMetaController struct {

@@ -2,9 +2,9 @@ package factories
 
 import (
 	"github.com/viniciusfal/erp/db"
-	"github.com/viniciusfal/erp/http/controller"
+	controller "github.com/viniciusfal/erp/http/controller/user"
 	"github.com/viniciusfal/erp/infra/repository"
-	"github.com/viniciusfal/erp/infra/usecase"
+	usecase "github.com/viniciusfal/erp/infra/usecase/user"
 )
 
 func MakeSession() controller.CreateSessionController {

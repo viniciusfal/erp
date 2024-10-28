@@ -2,9 +2,9 @@ package factories
 
 import (
 	"github.com/viniciusfal/erp/db"
-	"github.com/viniciusfal/erp/http/controller"
+	controller "github.com/viniciusfal/erp/http/controller/meta"
 	"github.com/viniciusfal/erp/infra/repository"
-	"github.com/viniciusfal/erp/infra/usecase"
+	usecase "github.com/viniciusfal/erp/infra/usecase/meta"
 )
 
 func MakeMeta() controller.CreateMetaController {
