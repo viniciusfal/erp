@@ -34,5 +34,4 @@ func (mc *CreateMetaController) CreateMeta(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusCreated, insertedMeta)
-
 }
