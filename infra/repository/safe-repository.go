@@ -96,7 +96,7 @@ func (sr *SafeRepository) SetSafe(safe *model.Safe) (*model.Safe, error) {
 	query, err := sr.connection.Prepare(`
 	UPDATE safe 
 	SET
-		send_date = $1
+		send_date = $1,
 		send_amount = $2
 	WHERE
 		id = $3

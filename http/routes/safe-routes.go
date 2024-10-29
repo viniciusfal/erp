@@ -10,9 +10,11 @@ func SafeRoutes(router *gin.Engine) {
 	ListSafesController := factories.MakeListSafe()
 	GetSafesController := factories.MakeGetSafesByDate()
 	SetSafesController := factories.MakeSetSafe()
+	SetActiveSafeController := factories.MakeSetActive()
 
 	router.POST("/safe", CreateSafeController.CreateSafe)
 	router.GET("/safe", ListSafesController.GetSafes)
 	router.GET("/safe/:startDate/:endDate", GetSafesController.GetSafesByDate)
-	router.PUT("/safe/:id", SetSafesController.SetSafeController)
+	router.PUT("/safe/:id", SetSafesController.SetSafe)
+	router.PATCH("/safe/:id", SetActiveSafeController.SetActiveSafe)
 }

@@ -8,17 +8,17 @@ import (
 	usecase "github.com/viniciusfal/erp/infra/usecase/safe"
 )
 
-type SetSafeController struct {
-	setSafeUseCase usecase.SetSafeUseCase
+type SetActiveController struct {
+	SetActiveUseCase usecase.SetActiveUseCase
 }
 
-func NewSetSafeController(usecase usecase.SetSafeUseCase) SetSafeController {
-	return SetSafeController{
-		setSafeUseCase: usecase,
+func NewSetActiveController(usecase usecase.SetActiveUseCase) SetActiveController {
+	return SetActiveController{
+		SetActiveUseCase: usecase,
 	}
 }
 
-func (sc *SetSafeController) SetSafe(ctx *gin.Context) {
+func (sc *SetActiveController) SetActiveSafe(ctx *gin.Context) {
 	id := ctx.Param("id")
 
 	var safe model.Safe
@@ -26,16 +26,15 @@ func (sc *SetSafeController) SetSafe(ctx *gin.Context) {
 	err := ctx.ShouldBindJSON(&safe)
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, err)
-		return
 	}
 
 	safe.ID = id
 
-	updatedSafe, err := sc.setSafeUseCase.SetSafe(&safe)
+	updateSafe, err := sc.SetActiveUseCase.SetActive(safe)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, err)
 		return
 	}
 
-	ctx.JSON(http.StatusOK, updatedSafe)
+	ctx.JSON(http.StatusOK, updateSafe)
 }
