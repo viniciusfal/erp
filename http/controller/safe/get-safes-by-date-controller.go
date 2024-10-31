@@ -22,8 +22,8 @@ func (sc *GetSafesByDateController) GetSafesByDate(ctx *gin.Context) {
 	startDate := ctx.Param("startDate")
 	endDate := ctx.Param("endDate")
 
-	formattedStartDate, _ := time.Parse("02-01-2006", startDate)
-	formattedEndDate, _ := time.Parse("02-01-2006", endDate)
+	formattedStartDate, _ := time.Parse("2006-01-02", startDate)
+	formattedEndDate, _ := time.Parse("2006-01-02", endDate)
 
 	safes, err := sc.GetSafesByDateUsecase.GetSafesByDate(formattedStartDate, formattedEndDate)
 	if err != nil {

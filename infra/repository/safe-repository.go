@@ -21,8 +21,8 @@ func NewSafeRepository(connection *sql.DB) SafeRepository {
 func (sr *SafeRepository) CreateSafe(safe model.Safe) (string, error) {
 	var id string
 
-	query, err := sr.connection.Prepare("INSERT INTO safe (id, send_date, send_amount, user_resp, active)" +
-		"VALUES(gen_random_uuid(), $1, $2, $3, $4) RETURNING id")
+	query, err := sr.connection.Prepare("INSERT INTO safe (id, send_date, send_amount, active)" +
+		"VALUES(gen_random_uuid(), $1, $2, $3) RETURNING id")
 	if err != nil {
 		fmt.Println(err)
 		return "", nil
@@ -30,7 +30,7 @@ func (sr *SafeRepository) CreateSafe(safe model.Safe) (string, error) {
 
 	defer query.Close()
 
-	err = query.QueryRow(safe.Send_date, safe.Send_amount, safe.User_resp, safe.Active).Scan(&id)
+	err = query.QueryRow(safe.Send_date, safe.Send_amount, safe.Active).Scan(&id)
 	if err != nil {
 		fmt.Println(err)
 		return "", nil
@@ -57,7 +57,6 @@ func (sr *SafeRepository) GetSafes() ([]model.Safe, error) {
 			&safe.ID,
 			&safe.Send_date,
 			&safe.Send_amount,
-			&safe.User_resp,
 			&safe.Active,
 		)
 
@@ -138,7 +137,6 @@ func (sr *SafeRepository) GetSafeByDate(startDate time.Time, endDate time.Time) 
 			&safe.ID,
 			&safe.Send_date,
 			&safe.Send_amount,
-			&safe.User_resp,
 			&safe.Active,
 		)
 
