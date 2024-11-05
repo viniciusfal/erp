@@ -20,6 +20,14 @@ func NewMetaRepository(connection *sql.DB) MetaRepository {
 func (mr *MetaRepository) CreateMeta(meta model.Meta) (string, error) {
 	var id string
 
+	existingMeta, err := mr.GetMetaByMonth(meta.Month)
+	if err != nil && err != sql.ErrNoRows {
+		return "", fmt.Errorf("failed to verify existing meta: %w", err)
+	}
+
+	if existingMeta != nil {
+		return "", fmt.Errorf("a meta for this month already exists")
+	}
 	query, err := mr.connection.Prepare("INSERT INTO meta (id, month, metaValue) VALUES(gen_random_uuid(), $1, $2) RETURNING id")
 	if err != nil {
 		fmt.Println(err)
