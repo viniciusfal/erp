@@ -254,3 +254,71 @@ func (tr *TransactionRepository) MarkPayment(transaction_id string) (string, err
 	return transaction_id, nil
 
 }
+
+func (tr *TransactionRepository) getTransactionSummaryByDate(startDate, endDate time.Time) (float64, float64, float64, error) {
+	var totalEntries, totalOutcomes float64
+
+	// Consulta SQL para somar as entradas e saídas
+	query := `
+		SELECT 
+			SUM(CASE WHEN type = 'entrada' THEN value ELSE 0 END) AS total_entries,
+			SUM(CASE WHEN type = 'saida' THEN value ELSE 0 END) AS total_outcomes
+		FROM transactions 
+		WHERE payment_date BETWEEN $1 AND $2`
+
+	// Executa a consulta e obtém as somas das entradas e saídas
+	err := tr.connection.QueryRow(query, startDate, endDate).Scan(&totalEntries, &totalOutcomes)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			// Se não houver transações no intervalo de datas, retornar zeros sem erro
+			return 0, 0, 0, nil
+		}
+		// Caso contrário, loga e retorna o erro
+		fmt.Println("Erro ao calcular o total das transações: ", err)
+		return 0, 0, 0, err
+	}
+
+	// Calcula o balanço total
+	totalBalance := totalEntries - totalOutcomes
+
+	// Retorna as somas de entradas, saídas e o balanço total
+	return totalEntries, totalOutcomes, totalBalance, nil
+}
+
+func (tr *TransactionRepository) GetTransactionGrowthByMonth() (float64, float64, float64, error) {
+	now := time.Now()
+
+	// Início e fim do mês atual
+	startCurrentMonth := time.Date(now.Year(), now.Month(), 1, 0, 0, 0, 0, now.Location())
+	endCurrentMonth := startCurrentMonth.AddDate(0, 1, 0).Add(-time.Second)
+
+	// Início e fim do mês anterior
+	startLastMonth := startCurrentMonth.AddDate(0, -1, 0)
+	endLastMonth := startCurrentMonth.Add(-time.Second)
+
+	// Obter balanço do mês anterior
+	totalEntriesLastMonth, totalOutcomesLastMonth, balanceLastMonth, err := tr.getTransactionSummaryByDate(startLastMonth, endLastMonth)
+	if err != nil {
+		return 0, 0, 0, err
+	}
+
+	// Obter balanço do mês atual
+	totalEntriesCurrentMonth, totalOutcomesCurrentMonth, balanceCurrentMonth, err := tr.getTransactionSummaryByDate(startCurrentMonth, endCurrentMonth)
+	if err != nil {
+		return 0, 0, 0, err
+	}
+
+	// Evitar divisão por zero
+	if balanceLastMonth == 0 {
+		return 0, 0, 0, nil // Se o balanço do mês anterior for zero, retornar 0% de crescimento
+	}
+
+	totalEntries := (totalEntriesCurrentMonth - totalEntriesLastMonth) / totalEntriesLastMonth * 100
+	totalOutcomes := (totalOutcomesCurrentMonth - totalOutcomesLastMonth) / totalOutcomesLastMonth * 100
+
+	// Calcular a taxa de crescimento do balanço entre os dois meses
+	growthRate := ((balanceCurrentMonth - balanceLastMonth) / balanceLastMonth) * 100
+
+	// Retornar a taxa de crescimento
+	return totalEntries, totalOutcomes, growthRate, nil
+}
