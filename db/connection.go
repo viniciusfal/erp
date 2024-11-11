@@ -18,7 +18,7 @@ func ConnectDB() (*sql.DB, error) {
 	dbname := os.Getenv("DB_NAME")       // Exemplo: "your_db_name"
 
 	// Formatar a string de conexão com PostgreSQL
-	psqlInfo := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
+	psqlInfo := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=require",
 		host, port, user, password, dbname)
 
 	// Abre a conexão com o banco de dados
