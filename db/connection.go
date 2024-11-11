@@ -3,6 +3,7 @@ package db
 import (
 	"database/sql"
 	"fmt"
+	"log"
 	"os"
 
 	_ "github.com/lib/pq"
@@ -26,6 +27,10 @@ func ConnectDB() (*sql.DB, error) {
 		return nil, fmt.Errorf("failed to open the database: %v", err)
 	}
 
+	_, err = db.Exec("SET search_path TO public;")
+	if err != nil {
+		log.Fatalf("Error setting search_path: %v", err)
+	}
 	// Verifica se a conexão foi bem-sucedida
 	err = db.Ping()
 	if err != nil {
