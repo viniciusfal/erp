@@ -26,12 +26,6 @@ func ConnectDB() (*sql.DB, error) {
 		return nil, fmt.Errorf("failed to open the database: %v", err)
 	}
 
-	// Definindo o search_path para "public"
-	_, err = db.Exec("SET search_path TO public;")
-	if err != nil {
-		return nil, fmt.Errorf("failed to set search_path: %w", err)
-	}
-
 	// Verifica se a conexão foi bem-sucedida
 	err = db.Ping()
 	if err != nil {
