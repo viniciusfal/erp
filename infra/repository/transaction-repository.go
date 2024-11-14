@@ -3,6 +3,7 @@ package repository
 import (
 	"database/sql"
 	"fmt"
+	"math"
 	"time"
 
 	"github.com/viniciusfal/erp/infra/model"
@@ -308,17 +309,28 @@ func (tr *TransactionRepository) GetTransactionGrowthByMonth() (float64, float64
 		return 0, 0, 0, err
 	}
 
-	// Evitar divisão por zero
-	if balanceLastMonth == 0 {
-		return 0, 0, 0, nil // Se o balanço do mês anterior for zero, retornar 0% de crescimento
+	// Evitar divisão por zero para total de entradas e saídas
+	var totalEntriesGrowth, totalOutcomesGrowth float64
+	if totalEntriesLastMonth != 0 {
+		totalEntriesGrowth = (totalEntriesCurrentMonth - totalEntriesLastMonth) / math.Abs(totalEntriesLastMonth) * 100
+	} else {
+		totalEntriesGrowth = 0 // Definir como 0% se não houve entradas no mês anterior
 	}
 
-	totalEntries := (totalEntriesCurrentMonth - totalEntriesLastMonth) / totalEntriesLastMonth * 100
-	totalOutcomes := (totalOutcomesCurrentMonth - totalOutcomesLastMonth) / totalOutcomesLastMonth * 100
+	if totalOutcomesLastMonth != 0 {
+		totalOutcomesGrowth = (totalOutcomesCurrentMonth - totalOutcomesLastMonth) / math.Abs(totalOutcomesLastMonth) * 100
+	} else {
+		totalOutcomesGrowth = 0 // Definir como 0% se não houve saídas no mês anterior
+	}
 
 	// Calcular a taxa de crescimento do balanço entre os dois meses
-	growthRate := ((balanceCurrentMonth - balanceLastMonth) / balanceLastMonth) * 100
+	var growthRate float64
+	if balanceLastMonth != 0 {
+		growthRate = (balanceCurrentMonth - balanceLastMonth) / math.Abs(balanceLastMonth) * 100
+	} else {
+		growthRate = 0 // Se o balanço do mês anterior for zero, retornar 0% de crescimento
+	}
 
 	// Retornar a taxa de crescimento
-	return totalEntries, totalOutcomes, growthRate, nil
+	return totalEntriesGrowth, totalOutcomesGrowth, growthRate, nil
 }
