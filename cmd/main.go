@@ -6,7 +6,6 @@ import (
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
-	"github.com/viniciusfal/erp/http/routes"
 )
 
 func main() {
@@ -14,19 +13,13 @@ func main() {
 
 	// Configuração do CORS para permitir acesso tanto do frontend local quanto da produção
 	server.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{"http://localhost:5173", "https://erp-1xqz.onrender.com", "https://erpamazoniainter.vercel.app"}, // Domínios permitidos
+		AllowOrigins:     []string{"http://localhost:5173", "https://erp-1xqz.onrender.com", "https://cornflowerblue-pony-878669.hostingersite.com"}, // Domínios permitidos
 		AllowMethods:     []string{"PUT", "PATCH", "GET", "POST", "DELETE"},
 		AllowHeaders:     []string{"Content-Type", "Authorization"},
 		ExposeHeaders:    []string{"Content-Length"},
 		AllowCredentials: true,
 		MaxAge:           12 * time.Hour,
 	}))
-
-	// Configuração das rotas
-	routes.TransactionRoutes(server)
-	routes.UserRoutes(server)
-	routes.MetaRoutes(server)
-	routes.SafeRoutes(server)
 
 	// Obter a porta via variável de ambiente para compatibilidade com o Render
 	port := os.Getenv("PORT")
