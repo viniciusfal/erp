@@ -3,7 +3,6 @@ package db
 import (
 	"database/sql"
 	"fmt"
-	"log"
 	"os"
 
 	_ "github.com/lib/pq"
@@ -18,7 +17,7 @@ func ConnectDB() (*sql.DB, error) {
 	dbname := os.Getenv("DB_NAME")       // Exemplo: "your_db_name"
 
 	// Formatar a string de conexão com PostgreSQL
-	psqlInfo := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
+	psqlInfo := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=require",
 		host, port, user, password, dbname)
 
 	// Abre a conexão com o banco de dados
@@ -33,10 +32,6 @@ func ConnectDB() (*sql.DB, error) {
 		return nil, fmt.Errorf("failed to ping the database: %v", err)
 	}
 
-	_, err = db.Exec("SET search_path TO public;")
-	if err != nil {
-		log.Fatalf("Error setting search_path: %v", err)
-	}
 	// Log de conexão bem-sucedida
 	fmt.Println("Connected to database:", dbname)
 
