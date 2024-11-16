@@ -4,7 +4,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/viniciusfal/erp/infra/usecase"
+	usecase "github.com/viniciusfal/erp/infra/usecase/transaction"
 )
 
 type ListTransactionController struct {

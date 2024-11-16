@@ -2,9 +2,9 @@ package factories
 
 import (
 	"github.com/viniciusfal/erp/db"
-	"github.com/viniciusfal/erp/http/controller"
+	controller "github.com/viniciusfal/erp/http/controller/transaction"
 	"github.com/viniciusfal/erp/infra/repository"
-	"github.com/viniciusfal/erp/infra/usecase"
+	usecase "github.com/viniciusfal/erp/infra/usecase/transaction"
 )
 
 func MakeListTransactions() controller.ListTransactionController {

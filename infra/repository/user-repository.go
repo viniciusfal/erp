@@ -30,7 +30,7 @@ func (ur *UserRepository) CreateUser(user model.User) (string, error) {
 
 	queryId.QueryRow(user.Email)
 
-	query, err := ur.connection.Prepare("INSERT INTO users" +
+	query, err := ur.connection.Prepare("INSERT INTO public.users" +
 		"(id, name, password, email, rope) " +
 		"VALUES(gen_random_uuid(), $1, $2, $3, $4) RETURNING id")
 

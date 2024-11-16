@@ -15,4 +15,5 @@ type Transaction struct {
 	Payment_date *time.Time `json:"payment_date"`
 	Created_at   time.Time  `json:"created_at"`
 	Updated_at   time.Time  `json:"updated_at"`
+	Pay          bool       `json:"pay"`
 }

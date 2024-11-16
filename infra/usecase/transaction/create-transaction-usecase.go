@@ -18,12 +18,17 @@ func NewTransactionUseCase(repo repository.TransactionRepository) TransactionUse
 }
 
 func (tu *TransactionUseCase) CreateTransaction(transaction model.Transaction) (model.Transaction, error) {
+
+	transaction.Created_at = time.Now()
+
+	if !transaction.Scheduling {
+		transaction.Pay = true
+	}
+
 	_, err := tu.repository.CreateTransaction(transaction)
 	if err != nil {
 		return model.Transaction{}, err
 	}
-
-	transaction.Created_at = time.Now()
 
 	return transaction, nil
 }

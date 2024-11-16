@@ -7,10 +7,10 @@ import (
 	usecase "github.com/viniciusfal/erp/infra/usecase/transaction"
 )
 
-func MakeGetTransactionById() controller.GetTransactionByIdController {
+func MakeAnalysesTransactionsByMonth() controller.AnalysesTransactionController {
 	TransactionRepository := repository.NewTransactionRepository(db.RunDB())
-	GeTransactionByIdUseCase := usecase.NewGetTransactionByIdUseCase(TransactionRepository)
-	GetTransactionByIdController := controller.NewGetTransactionByIdController(GeTransactionByIdUseCase)
+	AnalysesTransactionUseCase := usecase.NewAnalysesTransactionUseCase(TransactionRepository)
+	AnalysesTransactionController := controller.NewAnalysesTransactionController(AnalysesTransactionUseCase)
 
-	return GetTransactionByIdController
+	return AnalysesTransactionController
 }

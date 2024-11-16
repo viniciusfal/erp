@@ -5,7 +5,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/viniciusfal/erp/infra/model"
-	"github.com/viniciusfal/erp/infra/usecase"
+	usecase "github.com/viniciusfal/erp/infra/usecase/user"
 	"github.com/viniciusfal/erp/services"
 )
 
@@ -34,12 +34,16 @@ func (uc *CreateSessionController) CreateSession(ctx *gin.Context) {
 		return
 	}
 
-	token, err := services.NewJWTService().GenerateToken(user.ID)
+	accessToken, refreshToken, err := services.NewJWTService().GenerateToken(user.ID)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, err)
 		return
 	}
 
-	ctx.JSON(201, token)
+	services.NewJWTService().SetTokenInCookie(ctx.Writer, refreshToken)
+	ctx.JSON(http.StatusCreated, gin.H{
+		"access_token":  accessToken,
+		"refresh_token": refreshToken,
+	})
 
 }

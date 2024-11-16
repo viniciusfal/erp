@@ -5,7 +5,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/viniciusfal/erp/infra/model"
-	"github.com/viniciusfal/erp/infra/usecase"
+	usecase "github.com/viniciusfal/erp/infra/usecase/user"
 	"github.com/viniciusfal/erp/services"
 )
 
@@ -23,7 +23,6 @@ func (uc *CreateUserController) CreateUser(ctx *gin.Context) {
 	var user model.User
 
 	err := ctx.BindJSON(&user)
-
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, err)
 		return

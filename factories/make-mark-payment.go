@@ -7,10 +7,10 @@ import (
 	usecase "github.com/viniciusfal/erp/infra/usecase/transaction"
 )
 
-func MakeGetTransactionById() controller.GetTransactionByIdController {
+func MakeMarkPayment() controller.MarkPaymentController {
 	TransactionRepository := repository.NewTransactionRepository(db.RunDB())
-	GeTransactionByIdUseCase := usecase.NewGetTransactionByIdUseCase(TransactionRepository)
-	GetTransactionByIdController := controller.NewGetTransactionByIdController(GeTransactionByIdUseCase)
+	MarkPaymentUseCase := usecase.NewMarkPaymentUseCase(TransactionRepository)
+	MarkPaymentController := controller.NewMarkPaymentUseController(MarkPaymentUseCase)
 
-	return GetTransactionByIdController
+	return MarkPaymentController
 }
