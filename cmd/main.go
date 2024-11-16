@@ -13,7 +13,7 @@ func main() {
 
 	// Configuração do CORS para permitir acesso tanto do frontend local quanto da produção
 	server.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{"http://localhost:5173", "https://erp-1xqz.onrender.com", "https://cornflowerblue-pony-878669.hostingersite.com"}, // Domínios permitidos
+		AllowOrigins:     []string{"http://localhost:5173", "https://erp-1xqz.onrender.com"}, // Domínios permitidos
 		AllowMethods:     []string{"PUT", "PATCH", "GET", "POST", "DELETE"},
 		AllowHeaders:     []string{"Content-Type", "Authorization"},
 		ExposeHeaders:    []string{"Content-Length"},
