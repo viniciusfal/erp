@@ -10,13 +10,13 @@ import (
 func ConnectDB() (*sql.DB, error) {
 	// Usando variáveis de ambiente para configurar a conexão com o banco de dados
 	host := "postgres.railway.internal"
-	port := "5432"
+	port := 5432
 	user := "postgres"
 	password := "UUSGxmQxAnVmLyoeUBqPyluLqNcApEHl"
 	dbname := "railway"
 
 	// Formatar a string de conexão com PostgreSQL
-	psqlInfo := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=require",
+	psqlInfo := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=require",
 		host, port, user, password, dbname)
 
 	// Abre a conexão com o banco de dados
