@@ -3,18 +3,17 @@ package db
 import (
 	"database/sql"
 	"fmt"
-	"os"
 
 	_ "github.com/lib/pq"
 )
 
 func ConnectDB() (*sql.DB, error) {
 	// Usando variáveis de ambiente para configurar a conexão com o banco de dados
-	host := os.Getenv("DB_HOST")         // Por exemplo: "localhost" ou URL do banco no Render
-	port := os.Getenv("DB_PORT")         // Exemplo: "5432"
-	user := os.Getenv("DB_USER")         // Exemplo: "postgres"
-	password := os.Getenv("DB_PASSWORD") // Exemplo: "your_password"
-	dbname := os.Getenv("DB_NAME")       // Exemplo: "your_db_name"
+	host := "postgres.railway.internal"
+	port := "5432"
+	user := "postgres"
+	password := "UUSGxmQxAnVmLyoeUBqPyluLqNcApEHl"
+	dbname := "railway"
 
 	// Formatar a string de conexão com PostgreSQL
 	psqlInfo := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=require",
