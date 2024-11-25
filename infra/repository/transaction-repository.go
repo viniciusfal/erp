@@ -19,9 +19,22 @@ func NewTransactionRepository(connection *sql.DB) TransactionRepository {
 	}
 }
 
+func toUtc(t *time.Time) *time.Time {
+	if t != nil {
+		// Convertendo para UTC
+		converted := t.UTC()
+		return &converted
+	}
+	return nil
+}
+
 func (tr *TransactionRepository) CreateTransaction(transaction model.Transaction) (string, error) {
 	var id string
 
+	if transaction.Payment_date != nil {
+		// Se Payment_date não for nil, converte para UTC
+		transaction.Payment_date = toUtc(transaction.Payment_date)
+	}
 	query, err := tr.connection.Prepare("INSERT INTO transactions" +
 		"(id, title, value, type, category, scheduling, payment_date, pay) " +
 		"VALUES(gen_random_uuid(), $1, $2, $3, $4, $5, $6, $7) RETURNING id")
@@ -168,6 +181,10 @@ func (tr *TransactionRepository) GetTransactionsByDate(startDate time.Time, endD
 
 func (tr *TransactionRepository) SetTransaction(transaction *model.Transaction) (*model.Transaction, error) {
 
+	if transaction.Payment_date != nil {
+		transaction.Payment_date = toUtc(transaction.Payment_date)
+	}
+	transaction.Updated_at = transaction.Updated_at.UTC()
 	// old Transaction
 	_, err := tr.GetTransactionById(transaction.ID)
 	if err != nil {
