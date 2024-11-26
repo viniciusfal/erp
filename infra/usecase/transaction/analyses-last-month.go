@@ -14,7 +14,7 @@ func NewAnalysesTransactionUseCase(repo repository.TransactionRepository) Analys
 	}
 }
 
-func (tu *AnalysesTransactionUseCase) GetTransactionByMonth() (float64, float64, float64, error) {
+func (tu *AnalysesTransactionUseCase) GetTransactionByMonth() (int, int, int, error) {
 
 	totalEntries, totalOutcomes, totalBalance, err := tu.repository.GetTransactionGrowthByMonth()
 	if err != nil {

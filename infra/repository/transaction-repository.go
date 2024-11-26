@@ -3,7 +3,6 @@ package repository
 import (
 	"database/sql"
 	"fmt"
-	"math"
 	"time"
 
 	"github.com/viniciusfal/erp/infra/model"
@@ -44,7 +43,7 @@ func (tr *TransactionRepository) CreateTransaction(transaction model.Transaction
 		return "", err
 	}
 
-	err = query.QueryRow(transaction.Title, transaction.Value, transaction.Type,
+	err = query.QueryRow(transaction.Title, transaction.Value*100, transaction.Type,
 		transaction.Category, transaction.Scheduling, transaction.Payment_date, transaction.Pay).Scan(&id)
 	if err != nil {
 		println(err)
@@ -84,6 +83,8 @@ func (tr *TransactionRepository) GetTransactions() ([]model.Transaction, error) 
 			&transaction.Pay,
 		)
 
+		transaction.Value = transaction.Value / 100
+
 		if err != nil {
 			fmt.Println(err)
 			return []model.Transaction{}, err
@@ -120,6 +121,8 @@ func (tr *TransactionRepository) GetTransactionById(transaction_id string) (*mod
 		&transaction.Updated_at,
 		&transaction.Pay,
 	)
+
+	transaction.Value = transaction.Value / 100
 
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -163,6 +166,9 @@ func (tr *TransactionRepository) GetTransactionsByDate(startDate time.Time, endD
 			&transaction.Updated_at,
 			&transaction.Pay,
 		)
+
+		transaction.Value = transaction.Value / 100
+
 		if err != nil {
 			fmt.Println(err)
 			return nil, err
@@ -273,8 +279,8 @@ func (tr *TransactionRepository) MarkPayment(transaction_id string) (string, err
 
 }
 
-func (tr *TransactionRepository) getTransactionSummaryByDate(startDate, endDate time.Time) (float64, float64, float64, error) {
-	var totalEntries, totalOutcomes float64
+func (tr *TransactionRepository) getTransactionSummaryByDate(startDate, endDate time.Time) (int, int, int, error) {
+	var totalEntries, totalOutcomes int
 
 	// Consulta SQL para somar as entradas e saídas
 	query := `
@@ -297,13 +303,13 @@ func (tr *TransactionRepository) getTransactionSummaryByDate(startDate, endDate 
 	}
 
 	// Calcula o balanço total
-	totalBalance := totalEntries - totalOutcomes
+	totalBalance := (totalEntries - totalOutcomes) / 100
 
 	// Retorna as somas de entradas, saídas e o balanço total
-	return totalEntries, totalOutcomes, totalBalance, nil
+	return totalEntries / 100, totalOutcomes / 100, totalBalance / 100, nil
 }
 
-func (tr *TransactionRepository) GetTransactionGrowthByMonth() (float64, float64, float64, error) {
+func (tr *TransactionRepository) GetTransactionGrowthByMonth() (int, int, int, error) {
 	now := time.Now()
 
 	// Início e fim do mês atual
@@ -327,23 +333,23 @@ func (tr *TransactionRepository) GetTransactionGrowthByMonth() (float64, float64
 	}
 
 	// Evitar divisão por zero para total de entradas e saídas
-	var totalEntriesGrowth, totalOutcomesGrowth float64
+	var totalEntriesGrowth, totalOutcomesGrowth int
 	if totalEntriesLastMonth != 0 {
-		totalEntriesGrowth = (totalEntriesCurrentMonth - totalEntriesLastMonth) / math.Abs(totalEntriesLastMonth) * 100
+		totalEntriesGrowth = (totalEntriesCurrentMonth - totalEntriesLastMonth) * 100 / totalEntriesLastMonth
 	} else {
 		totalEntriesGrowth = 0 // Definir como 0% se não houve entradas no mês anterior
 	}
 
 	if totalOutcomesLastMonth != 0 {
-		totalOutcomesGrowth = (totalOutcomesCurrentMonth - totalOutcomesLastMonth) / math.Abs(totalOutcomesLastMonth) * 100
+		totalOutcomesGrowth = (totalOutcomesCurrentMonth - totalOutcomesLastMonth) * 100 / totalOutcomesLastMonth
 	} else {
 		totalOutcomesGrowth = 0 // Definir como 0% se não houve saídas no mês anterior
 	}
 
 	// Calcular a taxa de crescimento do balanço entre os dois meses
-	var growthRate float64
+	var growthRate int
 	if balanceLastMonth != 0 {
-		growthRate = (balanceCurrentMonth - balanceLastMonth) / math.Abs(balanceLastMonth) * 100
+		growthRate = (balanceCurrentMonth - balanceLastMonth) * 100 / balanceLastMonth
 	} else {
 		growthRate = 0 // Se o balanço do mês anterior for zero, retornar 0% de crescimento
 	}
