@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/shopspring/decimal"
 	"github.com/viniciusfal/erp/db"
 	"github.com/viniciusfal/erp/infra/model"
 	"github.com/viniciusfal/erp/infra/repository"
@@ -18,7 +19,7 @@ func TestCreateTransaction(t *testing.T) {
 	transaction := model.Transaction{
 		ID:           uuid.NewString(),
 		Title:        "venda de passagens",
-		Value:        200,
+		Value:        decimal.NewFromFloat(200),
 		Type:         "entrada",
 		Category:     "Vendas Guichê",
 		Scheduling:   false,
