@@ -7,7 +7,7 @@ import (
 type Transaction struct {
 	ID           string     `json:"transaction_id"`
 	Title        string     `json:"title"`
-	Value        int        `json:"value"`
+	Value        float64    `json:"value"`
 	Type         string     `json:"type"`
 	Category     string     `json:"category"`
 	Scheduling   bool       `json:"scheduling"`
