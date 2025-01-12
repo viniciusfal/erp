@@ -40,7 +40,7 @@ func (sr *SafeRepository) CreateSafe(safe model.Safe) (string, error) {
 }
 
 func (sr *SafeRepository) GetSafes() ([]model.Safe, error) {
-	query := "SELECT * FROM safe"
+	query := "SELECT * FROM safe ORDER BY send_date"
 
 	rows, err := sr.connection.Query(query)
 	if err != nil {
@@ -118,7 +118,7 @@ func (sr *SafeRepository) SetSafe(safe *model.Safe) (*model.Safe, error) {
 }
 
 func (sr *SafeRepository) GetSafeByDate(startDate time.Time, endDate time.Time) ([]*model.Safe, error) {
-	query := "SELECT * FROM safe WHERE send_date BETWEEN $1 AND $2"
+	query := "SELECT * FROM safe WHERE send_date BETWEEN $1 AND $2 ORDER BY send_date"
 
 	rows, err := sr.connection.Query(query, startDate, endDate)
 	if err != nil {

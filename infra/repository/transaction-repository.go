@@ -29,6 +29,7 @@ func toUtc(t *time.Time) *time.Time {
 }
 
 func (tr *TransactionRepository) CreateTransaction(transaction model.Transaction) (string, error) {
+
 	var id string
 
 	if transaction.Payment_date != nil {
@@ -36,8 +37,8 @@ func (tr *TransactionRepository) CreateTransaction(transaction model.Transaction
 		transaction.Payment_date = toUtc(transaction.Payment_date)
 	}
 	query, err := tr.connection.Prepare("INSERT INTO transactions" +
-		"(id, title, value, type, category, scheduling, payment_date, pay) " +
-		"VALUES(gen_random_uuid(), $1, $2, $3, $4, $5, $6, $7) RETURNING id")
+		"(id, title, value, type, category,  scheduling, payment_date, pay, details) " +
+		"VALUES(gen_random_uuid(), $1, $2, $3, $4, $5, $6, $7, $8) RETURNING id")
 
 	if err != nil {
 		fmt.Println(err)
@@ -45,7 +46,7 @@ func (tr *TransactionRepository) CreateTransaction(transaction model.Transaction
 	}
 
 	err = query.QueryRow(transaction.Title, transaction.Value, transaction.Type,
-		transaction.Category, transaction.Scheduling, transaction.Payment_date, transaction.Pay).Scan(&id)
+		transaction.Category, transaction.Scheduling, transaction.Payment_date, transaction.Pay, transaction.Details).Scan(&id)
 	if err != nil {
 		println(err)
 		return "", err
@@ -57,6 +58,9 @@ func (tr *TransactionRepository) CreateTransaction(transaction model.Transaction
 }
 
 func (tr *TransactionRepository) GetTransactions() ([]model.Transaction, error) {
+	if tr.connection == nil {
+		return nil, fmt.Errorf("conexão com o banco de dados não foi inicializada")
+	}
 
 	query := "SELECT * FROM transactions"
 	rows, err := tr.connection.Query(query)
@@ -82,6 +86,7 @@ func (tr *TransactionRepository) GetTransactions() ([]model.Transaction, error) 
 			&transaction.Created_at,
 			&transaction.Updated_at,
 			&transaction.Pay,
+			&transaction.Details,
 		)
 
 		if err != nil {
@@ -119,6 +124,7 @@ func (tr *TransactionRepository) GetTransactionById(transaction_id string) (*mod
 		&transaction.Created_at,
 		&transaction.Updated_at,
 		&transaction.Pay,
+		&transaction.Details,
 	)
 
 	if err != nil {
@@ -162,6 +168,7 @@ func (tr *TransactionRepository) GetTransactionsByDate(startDate time.Time, endD
 			&transaction.Created_at,
 			&transaction.Updated_at,
 			&transaction.Pay,
+			&transaction.Details,
 		)
 		if err != nil {
 			fmt.Println(err)
@@ -204,9 +211,10 @@ func (tr *TransactionRepository) SetTransaction(transaction *model.Transaction) 
 			annex = $6,
 			payment_date = $7,
 			updated_at = NOW(),
-			pay = $8
+			pay = $8,
+			details = $9
 		WHERE
-			id = $9
+			id = $10
 			`)
 	if err != nil {
 		fmt.Println(err)
@@ -214,7 +222,7 @@ func (tr *TransactionRepository) SetTransaction(transaction *model.Transaction) 
 	}
 
 	_, err = query.Exec(transaction.Title, transaction.Value, transaction.Type, transaction.Category,
-		transaction.Scheduling, transaction.Annex, transaction.Payment_date, transaction.Pay, transaction.ID)
+		transaction.Scheduling, transaction.Annex, transaction.Payment_date, transaction.Pay, transaction.Details, transaction.ID)
 	if err != nil {
 		fmt.Println(err)
 		return nil, err

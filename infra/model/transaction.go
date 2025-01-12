@@ -16,4 +16,5 @@ type Transaction struct {
 	Created_at   time.Time  `json:"created_at"`
 	Updated_at   time.Time  `json:"updated_at"`
 	Pay          bool       `json:"pay"`
+	Details      string     `json:"details"`
 }

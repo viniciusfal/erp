@@ -17,7 +17,7 @@ func main() {
 
 	// Configuração do CORS para permitir acesso tanto do frontend local quanto da produção
 	server.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{"http://localhost:5173", "https://api-erp-amazonia.up.railway.app", "https://erpamazoniainter.vercel.app"}, // Domínios permitidos
+		AllowOrigins:     []string{"http://localhost:3000", "https://erpnet.tech", "https://www.erpnet.tech"}, // Domínios permitidos
 		AllowMethods:     []string{"PUT", "PATCH", "GET", "POST", "DELETE"},
 		AllowHeaders:     []string{"Content-Type", "Authorization"},
 		ExposeHeaders:    []string{"Content-Length"},
@@ -25,10 +25,13 @@ func main() {
 		MaxAge:           12 * time.Hour,
 	}))
 
-	routes.TransactionRoutes(server)
-	routes.MetaRoutes(server)
-	routes.SafeRoutes(server)
-	routes.UserRoutes(server)
+	api := server.Group("/api")
+	{
+		routes.TransactionRoutes(api)
+		routes.MetaRoutes(api)
+		routes.SafeRoutes(api)
+		routes.UserRoutes(api)
+	}
 
 	fmt.Printf("Banco de dados conectado com sucesso: %v\n", dbConnection)
 

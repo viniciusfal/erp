@@ -20,6 +20,7 @@ func TestCreateTransaction(t *testing.T) {
 		Title:        "venda de passagens",
 		Value:        200,
 		Type:         "entrada",
+		Details:      "Venda de passagens para o show do dia 10/10/2021",
 		Category:     "Vendas Guichê",
 		Scheduling:   false,
 		Annex:        nil,

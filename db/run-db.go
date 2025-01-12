@@ -8,7 +8,8 @@ import (
 func RunDB() *sql.DB {
 	DbConnection, err := ConnectDB()
 	if err != nil {
-		fmt.Println("cnnected")
+		fmt.Println("Erro ao conectar com o banco de dados:", err)
+		return nil
 	}
 
 	return DbConnection

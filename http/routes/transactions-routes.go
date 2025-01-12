@@ -6,7 +6,7 @@ import (
 	"github.com/viniciusfal/erp/lib"
 )
 
-func TransactionRoutes(router *gin.Engine) {
+func TransactionRoutes(router *gin.RouterGroup) {
 	ListTransactionsController := factories.MakeListTransactions()
 	TransactionController := factories.MakeTransactions()
 	GetTransactionByIdController := factories.MakeGetTransactionById()
@@ -17,6 +17,7 @@ func TransactionRoutes(router *gin.Engine) {
 	MakeAnalysesTransactionController := factories.MakeAnalysesTransactionsByMonth()
 
 	transactionGroup := router.Group("/transaction")
+
 	{
 		transactionGroup.GET("/", ListTransactionsController.GetTransactions)
 		transactionGroup.POST("/", TransactionController.CreateTransaction)

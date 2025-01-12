@@ -5,7 +5,7 @@ import (
 	"github.com/viniciusfal/erp/factories"
 )
 
-func SafeRoutes(router *gin.Engine) {
+func SafeRoutes(router *gin.RouterGroup) {
 	CreateSafeController := factories.MakeSafe()
 	ListSafesController := factories.MakeListSafe()
 	GetSafesController := factories.MakeGetSafesByDate()
