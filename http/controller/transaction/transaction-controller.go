@@ -22,23 +22,37 @@ func NewTransactionController(usecase usecase.TransactionUseCase) TransactionCon
 func (tc *TransactionController) CreateTransaction(ctx *gin.Context) {
 	var transaction model.Transaction
 
-	err := ctx.BindJSON(&transaction)
+	// Usar ShouldBind para capturar os dados do formulário
+	err := ctx.ShouldBind(&transaction)
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, err)
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Erro ao processar os dados da transação"})
 		return
 	}
 
+	// Processa o upload do arquivo
+	file, fileHeader, err := ctx.Request.FormFile("file")
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Erro ao processar o arquivo"})
+		return
+	}
+
+	// Se a data de pagamento não for nil, converte corretamente
 	if transaction.Payment_date != nil {
-		formattedPaymentDate := transaction.Payment_date.Format("02/01/2006")
-		parsedDate, _ := time.Parse("02/01/2006", formattedPaymentDate)
+		parsedDate, err := time.Parse("02/01/2006", transaction.Payment_date.Format("02/01/2006"))
+		if err != nil {
+			ctx.JSON(http.StatusBadRequest, gin.H{"error": "Erro ao formatar a data"})
+			return
+		}
 		transaction.Payment_date = &parsedDate
 	}
 
-	insertedTransaction, err := tc.transactionUseCase.CreateTransaction(transaction)
+	// Chama o usecase para criar a transação
+	insertedTransaction, err := tc.transactionUseCase.CreateTransaction(transaction, file, fileHeader)
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, err)
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Erro ao criar a transação"})
 		return
 	}
 
+	// Retorna a transação criada
 	ctx.JSON(http.StatusCreated, insertedTransaction)
 }

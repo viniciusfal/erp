@@ -4,9 +4,11 @@ import (
 	"database/sql"
 	"fmt"
 	"math"
+	"mime/multipart"
 	"time"
 
 	"github.com/viniciusfal/erp/infra/model"
+	"github.com/viniciusfal/erp/services"
 )
 
 type TransactionRepository struct {
@@ -28,7 +30,7 @@ func toUtc(t *time.Time) *time.Time {
 	return nil
 }
 
-func (tr *TransactionRepository) CreateTransaction(transaction model.Transaction) (string, error) {
+func (tr *TransactionRepository) CreateTransaction(transaction model.Transaction, file multipart.File, fileHeader *multipart.FileHeader) (string, error) {
 
 	var id string
 
@@ -36,17 +38,27 @@ func (tr *TransactionRepository) CreateTransaction(transaction model.Transaction
 		// Se Payment_date não for nil, converte para UTC
 		transaction.Payment_date = toUtc(transaction.Payment_date)
 	}
-	query, err := tr.connection.Prepare("INSERT INTO transactions" +
-		"(id, title, value, type, category,  scheduling, payment_date, pay, details) " +
-		"VALUES(gen_random_uuid(), $1, $2, $3, $4, $5, $6, $7, $8) RETURNING id")
 
+	if file != nil && fileHeader != nil {
+		filepath, err := services.Savefile(file, fileHeader, "./uploads")
+		if err != nil {
+			return "", err
+		}
+		transaction.Annex = &filepath
+	} else {
+		transaction.Annex = nil
+	}
+
+	query, err := tr.connection.Prepare("INSERT INTO transactions" +
+		"(id, title, value, type, category,  scheduling, annex, payment_date, pay, details, method, nf, account) " +
+		"VALUES(gen_random_uuid(), $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) RETURNING id")
 	if err != nil {
 		fmt.Println(err)
 		return "", err
 	}
 
 	err = query.QueryRow(transaction.Title, transaction.Value, transaction.Type,
-		transaction.Category, transaction.Scheduling, transaction.Payment_date, transaction.Pay, transaction.Details).Scan(&id)
+		transaction.Category, transaction.Scheduling, transaction.Annex, transaction.Payment_date, transaction.Pay, transaction.Details, transaction.Method, transaction.Nf, transaction.Account).Scan(&id)
 	if err != nil {
 		println(err)
 		return "", err
@@ -87,6 +99,9 @@ func (tr *TransactionRepository) GetTransactions() ([]model.Transaction, error) 
 			&transaction.Updated_at,
 			&transaction.Pay,
 			&transaction.Details,
+			&transaction.Method,
+			&transaction.Nf,
+			&transaction.Account,
 		)
 
 		if err != nil {
@@ -125,6 +140,9 @@ func (tr *TransactionRepository) GetTransactionById(transaction_id string) (*mod
 		&transaction.Updated_at,
 		&transaction.Pay,
 		&transaction.Details,
+		&transaction.Method,
+		&transaction.Nf,
+		&transaction.Account,
 	)
 
 	if err != nil {
@@ -169,6 +187,9 @@ func (tr *TransactionRepository) GetTransactionsByDate(startDate time.Time, endD
 			&transaction.Updated_at,
 			&transaction.Pay,
 			&transaction.Details,
+			&transaction.Method,
+			&transaction.Nf,
+			&transaction.Account,
 		)
 		if err != nil {
 			fmt.Println(err)
@@ -212,9 +233,12 @@ func (tr *TransactionRepository) SetTransaction(transaction *model.Transaction) 
 			payment_date = $7,
 			updated_at = NOW(),
 			pay = $8,
-			details = $9
+			details = $9,
+			method = $10,
+			nf = $11,
+			account = $12
 		WHERE
-			id = $10
+			id = $13
 			`)
 	if err != nil {
 		fmt.Println(err)
@@ -222,7 +246,7 @@ func (tr *TransactionRepository) SetTransaction(transaction *model.Transaction) 
 	}
 
 	_, err = query.Exec(transaction.Title, transaction.Value, transaction.Type, transaction.Category,
-		transaction.Scheduling, transaction.Annex, transaction.Payment_date, transaction.Pay, transaction.Details, transaction.ID)
+		transaction.Scheduling, transaction.Annex, transaction.Payment_date, transaction.Pay, transaction.Details, transaction.Method, transaction.Nf, transaction.Account, transaction.ID)
 	if err != nil {
 		fmt.Println(err)
 		return nil, err

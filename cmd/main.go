@@ -25,6 +25,11 @@ func main() {
 		MaxAge:           12 * time.Hour,
 	}))
 
+	server.MaxMultipartMemory = 12 << 20 // 20 MB
+
+	// Servir a pasta 'uploads' como estática
+	server.Static("/uploads", "./uploads")
+
 	api := server.Group("/api")
 	{
 		routes.TransactionRoutes(api)

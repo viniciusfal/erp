@@ -3,7 +3,6 @@ package routes
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/viniciusfal/erp/factories"
-	"github.com/viniciusfal/erp/lib"
 )
 
 func TransactionRoutes(router *gin.RouterGroup) {
@@ -25,7 +24,6 @@ func TransactionRoutes(router *gin.RouterGroup) {
 		transactionGroup.GET("/byDate/:startDate/:endDate", GetTransactionByDateController.GetTransactionByDate)
 		transactionGroup.PUT("/:transactionId", SetTransactionController.SetTransaction)
 		transactionGroup.DELETE("/:transactionId", RemoveTransactionController.RemoveTransaction)
-		transactionGroup.POST("/upload", lib.Upload)
 		transactionGroup.PATCH("/:transactionId", MarkPaymentController.MarkPayment)
 		transactionGroup.GET("/analitics", MakeAnalysesTransactionController.GetTransactionByDate)
 	}

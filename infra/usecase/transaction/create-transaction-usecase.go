@@ -1,6 +1,7 @@
 package usecase
 
 import (
+	"mime/multipart"
 	"time"
 
 	"github.com/viniciusfal/erp/infra/model"
@@ -17,15 +18,17 @@ func NewTransactionUseCase(repo repository.TransactionRepository) TransactionUse
 	}
 }
 
-func (tu *TransactionUseCase) CreateTransaction(transaction model.Transaction) (model.Transaction, error) {
+func (tu *TransactionUseCase) CreateTransaction(transaction model.Transaction, file multipart.File, fileHeader *multipart.FileHeader) (model.Transaction, error) {
 
 	transaction.Created_at = time.Now()
 
+	// Ajustar o valor de Pay caso não seja agendado
 	if !transaction.Scheduling {
 		transaction.Pay = true
 	}
 
-	_, err := tu.repository.CreateTransaction(transaction)
+	// Chamar o repositório com os argumentos necessários
+	_, err := tu.repository.CreateTransaction(transaction, file, fileHeader)
 	if err != nil {
 		return model.Transaction{}, err
 	}
