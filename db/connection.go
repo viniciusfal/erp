@@ -4,13 +4,14 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
+	"time"
 
 	_ "github.com/lib/pq"
 )
 
 func ConnectDB() (*sql.DB, error) {
 	// Usando variáveis de ambiente para configurar a conexão com o banco de dados
-	host := "db"
+	host := "localhost"
 	port := "5432"         // Exemplo: "5432"
 	user := "postgres"     // Exemplo: "postgres"
 	password := "postgres" // Exemplo: "your_password"
@@ -25,6 +26,9 @@ func ConnectDB() (*sql.DB, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to open the database: %v", err)
 	}
+
+	// Definindo o timeout para a tentativa de conexão
+	db.SetConnMaxLifetime(6 * time.Second)
 
 	// Verifica se a conexão foi bem-sucedida
 	err = db.Ping()

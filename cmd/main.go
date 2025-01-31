@@ -8,6 +8,7 @@ import (
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/viniciusfal/erp/db"
+	"github.com/viniciusfal/erp/http/middleware"
 	"github.com/viniciusfal/erp/http/routes"
 )
 
@@ -20,22 +21,24 @@ func main() {
 		AllowOrigins:     []string{"http://localhost:3000", "https://erpnet.tech", "https://www.erpnet.tech"}, // Domínios permitidos
 		AllowMethods:     []string{"PUT", "PATCH", "GET", "POST", "DELETE"},
 		AllowHeaders:     []string{"Content-Type", "Authorization"},
-		ExposeHeaders:    []string{"Content-Length"},
+		ExposeHeaders:    []string{"Content-Length", "Set-cookie"},
 		AllowCredentials: true,
 		MaxAge:           12 * time.Hour,
 	}))
 
-	server.MaxMultipartMemory = 12 << 20 // 20 MB
+	server.MaxMultipartMemory = 12 << 10 // 20 MB
 
 	// Servir a pasta 'uploads' como estática
-	server.Static("/uploads", "./uploads")
 
-	api := server.Group("/api")
+	api := server.Group("/api", middleware.JWTMiddleware())
 	{
 		routes.TransactionRoutes(api)
 		routes.MetaRoutes(api)
 		routes.SafeRoutes(api)
-		routes.UserRoutes(api)
+	}
+	apiPublic := server.Group("/api")
+	{
+		routes.UserRoutes(apiPublic) // Aqui, a rota de login pode ser acessada sem JWT
 	}
 
 	fmt.Printf("Banco de dados conectado com sucesso: %v\n", dbConnection)

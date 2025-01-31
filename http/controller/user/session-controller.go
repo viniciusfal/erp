@@ -1,12 +1,13 @@
 package controller
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/viniciusfal/erp/http/middleware"
 	"github.com/viniciusfal/erp/infra/model"
 	usecase "github.com/viniciusfal/erp/infra/usecase/user"
-	"github.com/viniciusfal/erp/services"
 )
 
 type CreateSessionController struct {
@@ -24,26 +25,30 @@ func (uc *CreateSessionController) CreateSession(ctx *gin.Context) {
 
 	err := ctx.BindJSON(&session)
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, err)
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Dados inválidos"})
 		return
 	}
 
 	user, err := uc.sessionUseCase.CreateSession(session.Email, session.Password)
 	if err != nil {
-		ctx.JSON(http.StatusUnauthorized, err.Error())
+		ctx.JSON(http.StatusUnauthorized, gin.H{"error": "Usuário ou senha inválidos"})
 		return
 	}
 
-	accessToken, refreshToken, err := services.NewJWTService().GenerateToken(user.ID)
+	token, err := middleware.GerarToken(user.ID)
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, err)
+		fmt.Println("Erro ao gerar token", err)
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Erro ao gerar token"})
 		return
 	}
 
-	services.NewJWTService().SetTokenInCookie(ctx.Writer, refreshToken)
-	ctx.JSON(http.StatusCreated, gin.H{
-		"access_token":  accessToken,
-		"refresh_token": refreshToken,
-	})
+	fmt.Println("token JWT", token)
 
+	ctx.JSON(http.StatusOK, gin.H{
+		"token": token,
+		"user": gin.H{
+			"id":    user.ID,
+			"email": user.Email,
+		},
+	})
 }

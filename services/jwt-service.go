@@ -1,61 +1,46 @@
 package services
 
 import (
-	"fmt"
 	"net/http"
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
+	"github.com/gin-gonic/gin"
 )
 
-type jwtService struct {
-	secretKey     string
-	issuer        string
-	refreshSecret string
+type JWTService struct {
+	secretKey string
 }
 
-func NewJWTService() *jwtService {
-	return &jwtService{
-		secretKey:     "generic-key",
-		refreshSecret: "generic-refresh-key",
-		issuer:        "erp-api",
+func NewJWTService() *JWTService {
+	return &JWTService{
+		secretKey: "Pr073!n@22", // Substitua por uma chave segura
 	}
 }
 
-type Claim struct {
-	Sub string `json:"sub"`
-	jwt.StandardClaims
-}
+func (service *JWTService) GenerateToken(userID string) (string, string, error) {
+	// Define a expiração do token
+	accessTokenExpires := time.Now().Add(time.Hour * 1).Unix()
+	refreshTokenExpires := time.Now().Add(time.Hour * 24 * 7).Unix()
 
-func (s *jwtService) GenerateToken(id string) (string, string, error) {
-	// Gerar o token de acesso
-	accessClaim := &Claim{
-		Sub: id,
-		StandardClaims: jwt.StandardClaims{
-			ExpiresAt: time.Now().Add(time.Minute * 15).Unix(),
-			Issuer:    s.issuer,
-			IssuedAt:  time.Now().Unix(),
-		},
-	}
+	// Criando o token de acesso
+	accessToken := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"user_id": userID,
+		"exp":     accessTokenExpires,
+	})
 
-	accessToken := jwt.NewWithClaims(jwt.SigningMethodHS256, accessClaim)
-	accessTokenString, err := accessToken.SignedString([]byte(s.secretKey))
+	accessTokenString, err := accessToken.SignedString([]byte(service.secretKey))
 	if err != nil {
 		return "", "", err
 	}
 
-	// Gerar o token de refresh
-	refreshClaim := &Claim{
-		Sub: id,
-		StandardClaims: jwt.StandardClaims{
-			ExpiresAt: time.Now().Add(time.Hour * 24 * 7).Unix(), // 1 semana
-			Issuer:    s.issuer,
-			IssuedAt:  time.Now().Unix(),
-		},
-	}
+	// Criando o token de refresh
+	refreshToken := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"user_id": userID,
+		"exp":     refreshTokenExpires,
+	})
 
-	refreshToken := jwt.NewWithClaims(jwt.SigningMethodHS256, refreshClaim)
-	refreshTokenString, err := refreshToken.SignedString([]byte(s.refreshSecret))
+	refreshTokenString, err := refreshToken.SignedString([]byte(service.secretKey))
 	if err != nil {
 		return "", "", err
 	}
@@ -63,48 +48,11 @@ func (s *jwtService) GenerateToken(id string) (string, string, error) {
 	return accessTokenString, refreshTokenString, nil
 }
 
-func (s *jwtService) ValidateToken(token string) bool {
-	_, err := jwt.Parse(token, func(t *jwt.Token) (interface{}, error) {
-		if _, isValid := t.Method.(*jwt.SigningMethodHMAC); !isValid {
-			return nil, fmt.Errorf("invalid token: %v", token)
-		}
+func (service *JWTService) SetTokenInCookie(c *gin.Context, refreshToken string) {
+	c.SetSameSite(http.SameSiteNoneMode)
+	c.SetCookie("refresh_token", refreshToken, 3600*24*7, "/", "", false, false) // Cookies seguros (secure: false para localhost)
 
-		return []byte(s.secretKey), nil
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Login bem-sucedido",
 	})
-
-	return err == nil
-}
-
-func (s *jwtService) ValidateRefreshToken(token string) bool {
-	_, err := jwt.Parse(token, func(t *jwt.Token) (interface{}, error) {
-		if _, isValid := t.Method.(*jwt.SigningMethodHMAC); !isValid {
-			return nil, fmt.Errorf("invalid refresh token: %v", token)
-		}
-
-		return []byte(s.refreshSecret), nil
-	})
-
-	return err == nil
-}
-
-// SetTokenInCookie armazena o token JWT em um cookie
-func (s *jwtService) SetTokenInCookie(w http.ResponseWriter, token string) {
-	cookie := http.Cookie{
-		Name:     "auth_token",
-		Value:    token,
-		Path:     "/",
-		Expires:  time.Now().Add(time.Hour * 24 * 7),
-		HttpOnly: true,  // Para proteger contra XSS
-		Secure:   false, // Use true se estiver usando HTTPS
-	}
-	http.SetCookie(w, &cookie)
-}
-
-// GetTokenFromCookie obtém o token JWT do cookie
-func (s *jwtService) GetTokenFromCookie(r *http.Request) (string, error) {
-	cookie, err := r.Cookie("auth_token")
-	if err != nil {
-		return "", err
-	}
-	return cookie.Value, nil
 }

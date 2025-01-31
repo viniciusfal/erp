@@ -29,9 +29,7 @@ WORKDIR /app
 # Copiar o binário compilado da etapa de build
 COPY --from=builder /app/main .
 
-# Adicionar o script wait-for-it (agora local)
-COPY wait-for-it.sh /wait-for-it.sh
-RUN chmod +x /wait-for-it.sh
+
 
 # Expor a porta que o aplicativo irá rodar
 EXPOSE 8000
