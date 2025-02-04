@@ -38,14 +38,12 @@ func main() {
 		routes.MetaRoutes(api)
 		routes.SafeRoutes(api)
 	}
-	apiPublic := server.Group("/api")
-	{
-		routes.UserRoutes(apiPublic) // Aqui, a rota de login pode ser acessada sem JWT
-	}
+
+	routes.UserRoutes(server) // Aqui, a rota de login pode ser acessada sem JWT
 
 	fmt.Printf("Banco de dados conectado com sucesso: %v\n", dbConnection)
 
-	port := os.Getenv("PGPORT")
+	port := os.Getenv("PORT")
 	if port == "" {
 		port = "8000" // Porta padrão para desenvolvimento
 	}
