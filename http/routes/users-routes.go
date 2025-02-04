@@ -5,7 +5,7 @@ import (
 	"github.com/viniciusfal/erp/factories"
 )
 
-func UserRoutes(router *gin.Engine) {
+func UserRoutes(router *gin.RouterGroup) {
 	CreateUserController := factories.MakeUser()
 	ListUsers := factories.MakeListUsers()
 	CreateSessionController := factories.MakeSession()
