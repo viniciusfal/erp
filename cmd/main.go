@@ -18,7 +18,7 @@ func main() {
 
 	// Configuração do CORS para permitir acesso tanto do frontend local quanto da produção
 	server.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{"http://localhost:3000", "https://erpnet.tech", "https://www.erpnet.tech"}, // Domínios permitidos
+		AllowOrigins:     []string{"http://localhost:3000", "https://erpamazoniainter.vercel.app", "https://www.erpamazoniainter.vercel.app"}, // Domínios permitidos
 		AllowMethods:     []string{"PUT", "PATCH", "GET", "POST", "DELETE"},
 		AllowHeaders:     []string{"Content-Type", "Authorization"},
 		ExposeHeaders:    []string{"Content-Length", "Set-cookie"},
@@ -29,6 +29,8 @@ func main() {
 	server.MaxMultipartMemory = 12 << 10 // 20 MB
 
 	// Servir a pasta 'uploads' como estática
+
+	server.Static("/uploads", "./uploads")
 
 	api := server.Group("/api", middleware.JWTMiddleware())
 	{

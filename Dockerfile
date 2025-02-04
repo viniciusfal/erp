@@ -29,6 +29,8 @@ WORKDIR /app
 # Copiar o binário compilado da etapa de build
 COPY --from=builder /app/main .
 
+COPY wait-for-it.sh /wait-for-it.sh
+RUN chmod +x /wait-for-it.sh
 
 
 # Expor a porta que o aplicativo irá rodar

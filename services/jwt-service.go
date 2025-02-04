@@ -50,7 +50,7 @@ func (service *JWTService) GenerateToken(userID string) (string, string, error) 
 
 func (service *JWTService) SetTokenInCookie(c *gin.Context, refreshToken string) {
 	c.SetSameSite(http.SameSiteNoneMode)
-	c.SetCookie("refresh_token", refreshToken, 3600*24*7, "/", "", false, false) // Cookies seguros (secure: false para localhost)
+	c.SetCookie("refresh_token", refreshToken, 3600*24*7, "/", "", true, true) // Cookies seguros (secure: false para localhost)
 
 	c.JSON(http.StatusOK, gin.H{
 		"message": "Login bem-sucedido",
