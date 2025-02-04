@@ -11,7 +11,7 @@ import (
 )
 
 func ConnectDB() (*sql.DB, error) {
-	host := os.Getenv("PGHOST")          // Por exemplo: "localhost" ou URL do banco no Render
+	host := "erpnet.up.railway.app"      // Por exemplo: "localhost" ou URL do banco no Render
 	port := os.Getenv("PGPORT")          // Exemplo: "5432"
 	user := os.Getenv("PGUSER")          // Exemplo: "postgres"
 	password := os.Getenv("DB_PASSWORD") // Exemplo: "your_password"
