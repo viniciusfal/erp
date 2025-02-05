@@ -11,6 +11,6 @@ func UserRoutes(router *gin.RouterGroup) {
 	CreateSessionController := factories.MakeSession()
 
 	router.POST("/user", CreateUserController.CreateUser)
-	router.GET("/users", ListUsers.GetUsers)
+	router.GET("/user", ListUsers.GetUsers)
 	router.POST("/session", CreateSessionController.CreateSession)
 }
