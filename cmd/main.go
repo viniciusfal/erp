@@ -39,7 +39,7 @@ func main() {
 		routes.SafeRoutes(api)
 	}
 
-	apiPublic := server.Group("/api")
+	apiPublic := server.Group("/api/t")
 	{
 		routes.UserRoutes(apiPublic) // Aqui, a rota de login pode ser acessada sem JWT
 	}
