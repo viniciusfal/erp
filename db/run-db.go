@@ -2,16 +2,14 @@ package db
 
 import (
 	"database/sql"
-	"fmt"
+	"log"
 )
 
 func RunDB() *sql.DB {
-	DbConnection, err := ConnectDB()
+	db, err := ConnectDB()
 	if err != nil {
-		fmt.Println("Erro ao conectar com o banco de dados:", err)
-		return nil
+		log.Fatalf("🚨 Erro ao conectar ao banco de dados: %v", err)
 	}
 
-	return DbConnection
-
+	return db
 }
