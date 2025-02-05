@@ -11,7 +11,7 @@ import (
 
 func ConnectDB() (*sql.DB, error) {
 	host := "monorail.proxy.rlwy.net"              // Por exemplo: "localhost" ou URL do banco no Render
-	port := "5432"                                 // Exemplo: "5432"
+	port := "24898"                                // Exemplo: "5432"
 	user := "postgres"                             // Exemplo: "postgres"
 	password := "wIZYSiJzhYYAHMFmEAJLhytFjCndnFyJ" // Exemplo: "your_password"
 	dbname := "railway"                            // Exemplo: "your_db_name"
