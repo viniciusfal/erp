@@ -32,7 +32,7 @@ func main() {
 
 	server.Static("/uploads", "./uploads")
 
-	apiPublic := server.Group("/public")
+	apiPublic := server.Group("/api")
 	{
 		routes.UserRoutes(apiPublic) // Aqui, a rota de login pode ser acessada sem JWT
 	}
