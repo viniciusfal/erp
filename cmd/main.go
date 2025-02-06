@@ -32,16 +32,16 @@ func main() {
 
 	server.Static("/uploads", "./uploads")
 
+	apiPublic := server.Group("/public")
+	{
+		routes.UserRoutes(apiPublic) // Aqui, a rota de login pode ser acessada sem JWT
+	}
+
 	api := server.Group("/api", middleware.JWTMiddleware())
 	{
 		routes.TransactionRoutes(api)
 		routes.MetaRoutes(api)
 		routes.SafeRoutes(api)
-	}
-
-	apiPublic := server.Group("/api-public")
-	{
-		routes.UserRoutes(apiPublic) // Aqui, a rota de login pode ser acessada sem JWT
 	}
 
 	fmt.Printf("Banco de dados conectado com sucesso: %v\n", dbConnection)
