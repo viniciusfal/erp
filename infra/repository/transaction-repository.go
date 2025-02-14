@@ -124,7 +124,6 @@ func (tr *TransactionRepository) GetTransactionById(transaction_id string) (*mod
 		fmt.Println(err)
 		return nil, err
 	}
-
 	var transaction model.Transaction
 
 	err = query.QueryRow(transaction_id).Scan(
@@ -382,4 +381,43 @@ func (tr *TransactionRepository) GetTransactionGrowthByMonth() (float64, float64
 
 	// Retornar a taxa de crescimento
 	return totalEntriesGrowth, totalOutcomesGrowth, growthRate, nil
+}
+
+func (tr *TransactionRepository) ImportCSV(transaction []model.Transaction) error {
+
+	transactions := make([]model.Transaction, 0)
+
+	tx, err := tr.connection.Begin()
+	if err != nil {
+		fmt.Println(err)
+		return nil
+	}
+
+	query, err := tr.connection.Prepare("INSERT INTO transactions" +
+		"(id, title, value, type, category,  scheduling, annex, payment_date, pay, details, method, nf, account) " +
+		"VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13) RETURNING id")
+	if err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	defer query.Close()
+
+	for _, transaction := range transactions {
+		_, err := query.Exec(transaction.ID, transaction.Title, transaction.Value, transaction.Type,
+			transaction.Category, false, transaction.Annex, transaction.Payment_date, true, transaction.Details, transaction.Method, transaction.Nf, transaction.Account)
+
+		if err != nil {
+			fmt.Println(err)
+			return err
+		}
+	}
+
+	err = tx.Commit()
+	if err != nil {
+		fmt.Println(err)
+		return err
+	}
+
+	return nil
 }
