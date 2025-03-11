@@ -14,7 +14,7 @@ func TransactionRoutes(router *gin.RouterGroup) {
 	RemoveTransactionController := factories.MakeRemoveTransaction()
 	MarkPaymentController := factories.MakeMarkPayment()
 	MakeAnalysesTransactionController := factories.MakeAnalysesTransactionsByMonth()
-
+	MakeImportTransactions := factories.MakeImportTransactions()
 	transactionGroup := router.Group("/transaction")
 
 	{
@@ -26,5 +26,6 @@ func TransactionRoutes(router *gin.RouterGroup) {
 		transactionGroup.DELETE("/:transactionId", RemoveTransactionController.RemoveTransaction)
 		transactionGroup.PATCH("/:transactionId", MarkPaymentController.MarkPayment)
 		transactionGroup.GET("/analitics", MakeAnalysesTransactionController.GetTransactionByDate)
+		transactionGroup.POST("/upload", MakeImportTransactions.ImportTransactions)
 	}
 }
