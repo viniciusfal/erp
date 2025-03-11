@@ -14,7 +14,6 @@ func TransactionRoutes(router *gin.RouterGroup) {
 	RemoveTransactionController := factories.MakeRemoveTransaction()
 	MarkPaymentController := factories.MakeMarkPayment()
 	MakeAnalysesTransactionController := factories.MakeAnalysesTransactionsByMonth()
-	MakeImportTransactionSCV := factories.MakeImportTransactionsCSV()
 
 	transactionGroup := router.Group("/transaction")
 
@@ -27,6 +26,5 @@ func TransactionRoutes(router *gin.RouterGroup) {
 		transactionGroup.DELETE("/:transactionId", RemoveTransactionController.RemoveTransaction)
 		transactionGroup.PATCH("/:transactionId", MarkPaymentController.MarkPayment)
 		transactionGroup.GET("/analitics", MakeAnalysesTransactionController.GetTransactionByDate)
-		transactionGroup.POST("/import-transactions", MakeImportTransactionSCV.UploadFile)
 	}
 }

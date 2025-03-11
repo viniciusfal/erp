@@ -5,10 +5,14 @@ import (
 	"fmt"
 	"math"
 	"mime/multipart"
+	"strconv"
+	"strings"
 	"time"
 
 	"github.com/viniciusfal/erp/infra/model"
+
 	"github.com/viniciusfal/erp/services"
+	"github.com/xuri/excelize/v2"
 )
 
 type TransactionRepository struct {
@@ -383,41 +387,84 @@ func (tr *TransactionRepository) GetTransactionGrowthByMonth() (float64, float64
 	return totalEntriesGrowth, totalOutcomesGrowth, growthRate, nil
 }
 
-func (tr *TransactionRepository) ImportCSV(transaction []model.Transaction) error {
-
-	transactions := make([]model.Transaction, 0)
-
-	tx, err := tr.connection.Begin()
+func (tr *TransactionRepository) CreateTransactionsFromExcel(file multipart.File) error {
+	// Abrir arquivo Excel a partir do upload
+	f, err := excelize.OpenReader(file)
 	if err != nil {
-		fmt.Println(err)
-		return nil
+		return fmt.Errorf("erro ao abrir arquivo Excel: %w", err)
+	}
+	defer f.Close()
+
+	// Obter todas as linhas da primeira aba
+	rows, err := f.GetRows(f.GetSheetName(0))
+	if err != nil {
+		return fmt.Errorf("erro ao ler as linhas do Excel: %w", err)
 	}
 
-	query, err := tr.connection.Prepare("INSERT INTO transactions" +
-		"(id, title, value, type, category,  scheduling, annex, payment_date, pay, details, method, nf, account) " +
-		"VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13) RETURNING id")
-	if err != nil {
-		tx.Rollback()
-		return err
-	}
+	// Percorrer as linhas do Excel (pulando a primeira linha que é o cabeçalho)
+	for i, row := range rows {
+		if i == 0 {
+			continue // Pular cabeçalho
+		}
 
-	defer query.Close()
+		if len(row) < 8 { // Garante que a linha tem dados suficientes
+			continue
+		}
 
-	for _, transaction := range transactions {
-		_, err := query.Exec(transaction.ID, transaction.Title, transaction.Value, transaction.Type,
-			transaction.Category, false, transaction.Annex, transaction.Payment_date, true, transaction.Details, transaction.Method, transaction.Nf, transaction.Account)
+		// Converter os dados
+		value, isNegative := parseCurrency(row[7])
+		transactionType := row[7]
 
+		if isNegative {
+			transactionType = "saida"
+		} else {
+			transactionType = "entrada"
+		}
+
+		paymentDate, err := time.Parse("02/01/2006", row[5])
 		if err != nil {
-			fmt.Println(err)
-			return err
+			fmt.Printf("Erro ao converter data na linha %d: %v\n", i+1, err)
+			continue
+		}
+
+		transaction := model.Transaction{
+			Method:       row[0],
+			Category:     row[1],
+			Nf:           row[2],
+			Title:        row[3],
+			Details:      row[4],
+			Type:         transactionType,
+			Payment_date: &paymentDate,
+			Account:      row[6],
+			Value:        value,
+			Scheduling:   false,
+		}
+
+		// Criar transação no banco
+		_, err = tr.CreateTransaction(transaction, nil, nil)
+		if err != nil {
+			fmt.Printf("Erro ao inserir transação na linha %d: %v\n", i+1, err)
 		}
 	}
 
-	err = tx.Commit()
+	fmt.Println("Importação concluída!")
+	return nil
+}
+
+func parseCurrency(value string) (float64, bool) {
+	isNegative := strings.Contains(value, "-") // Verifica se o valor tem o sinal de negativo
+	value = strings.ReplaceAll(value, "R$", "")
+	value = strings.ReplaceAll(value, ".", "")
+	value = strings.ReplaceAll(value, ",", ".")
+	value = strings.ReplaceAll(value, "-", "") // Remove o sinal para converter corretamente
+
+	parsedValue, err := strconv.ParseFloat(strings.TrimSpace(value), 64)
 	if err != nil {
-		fmt.Println(err)
-		return err
+		return 0, false // Retorna 0 caso haja erro
 	}
 
-	return nil
+	if isNegative {
+		parsedValue *= -1 // Mantém o valor negativo
+	}
+	return parsedValue, isNegative
 }
