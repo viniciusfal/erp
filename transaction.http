@@ -1,0 +1,158 @@
+@baseurl = http://localhost:8000/api
+@token = Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NDI5MDU4MzMsImlhdCI6MTc0MjgxOTQzMywiaXNzIjoiZXJwLWFwaSIsInN1YiI6Ijk5NDI2YzJjLWJmOTEtNDcxYS1iYzU0LWI4MmUyZTIzNjkwOSJ9.lCtBDQwzXvWuBo27DeqGubqe-VMN5--HmfEyW2dbOSU
+POST {{baseurl}}/session
+Content-Type: application/json
+
+{
+	"email": "financeiro.ch@amazoniainter.com.br",
+	"password": "f123456"
+}
+
+### Create Transaction
+POST {{baseurl}}/transaction/
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+Authorization:  {{token}}
+
+----WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="title"
+
+Conta de Luz
+----WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="value"
+
+150.0
+----WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="type"
+
+pagar
+----WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="category"
+
+Despesas Fixas
+----WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="scheduling"
+
+true
+----WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="payment_date"
+
+2025-03-20T00:00:00Z
+----WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="pay"
+
+true
+----WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="details"
+
+Conta de luz do mês
+----WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="method"
+
+Dinheiro
+----WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="nf"
+
+123456
+----WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="account"
+
+Banco X
+----WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="due_date"
+
+2025-03-24T00:00:00Z
+----WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="status"
+
+pago
+----WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="installment"
+
+1
+----WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="total_installments"
+
+1
+----WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="file"; filename="anexo.pdf"
+
+
+### List transactions
+GET {{baseurl}}/transaction/
+Authorization: {{token}}
+
+### Find One Transaction
+GET {{baseurl}}/transaction/d1b7dd42-f987-42dc-ad94-d6570c86c892
+Authorization: {{token}}
+
+###  Mark Low
+PUT {{baseurl}}/transaction/markLow/62fb189b-e60a-41d0-b51a-d089cfbb04c0
+Content-Type: application/json
+Authorization: {{token}}
+
+{
+	"status": "recebido",
+	"payment_date": "2025-03-24T00:00:00Z"
+}
+
+### Create Installment
+POST {{baseurl}}/transaction/installment
+Content-Type: application/json
+Authorization: {{token}}
+
+{
+  "total_value": 1000.00,
+  "total_installments": 1,
+  "title": "Sigo bank Restituição",
+	"details": "Teste de uma Entrada a receber...",
+	"type": "entrada",
+  "initial_due_date": "2025-03-24T00:00:00Z",
+  "status": "aberto",
+  "category": "Eletrônicos"
+}
+
+### Create Transaction Low directly
+POST {{baseurl}}/transaction/low	
+Content-Type: application/json
+Authorization: {{token}}
+
+{
+  "total_value": 28000.00,
+  "total_installments": 1,
+  "title": "Emprestimo Santander 6",
+	"type": "saida",
+  "initial_due_date": "2025-03-24T00:00:00Z",
+  "payment_date": "2025-03-25T05:00:00Z",
+  "status": "pago",
+  "category": "Eletrônicos",
+	"method": "Cartão",
+	"account": "Banco do Brasil"
+}
+
+### GET LOW BY DATE today
+GET {{baseurl}}/transaction/byDate/low/today?status=pago
+Authorization: {{token}}
+
+### GET LOW BY DATE Current
+GET {{baseurl}}/transaction/byDate/low/current?status=pago
+Authorization: {{token}}
+
+### GET LOW By Date last Seven Days
+GET {{baseurl}}/transaction/byDate/low/lastSeven?status=pago
+Authorization: {{token}}
+
+### GET LOW By Date last Thirty Days
+GET {{baseurl}}/transaction/byDate/low/lastThird?status=pago
+Authorization: {{token}}
+
+### get due date Current
+GET {{baseurl}}/transaction/byDate/due/current
+Authorization: {{token}}
+
+### GET due By Date last Seven Days
+GET {{baseurl}}/transaction/byDate/due/lastSeven
+Authorization: {{token}}
+
+### GET due By Date last Thirty Days
+GET {{baseurl}}/transaction/byDate/due/lastThird
+Authorization: {{token}}

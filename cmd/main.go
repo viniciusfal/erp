@@ -42,6 +42,7 @@ func main() {
 		routes.TransactionRoutes(api)
 		routes.MetaRoutes(api)
 		routes.SafeRoutes(api)
+		routes.SupplierRoutes(api)
 	}
 
 	fmt.Printf("Banco de dados conectado com sucesso: %v\n", dbConnection)

@@ -1,0 +1,57 @@
+@baseurl = http://localhost:8000/api
+@token = Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NDI4NjQ2MDUsImlhdCI6MTc0Mjc3ODIwNSwiaXNzIjoiZXJwLWFwaSIsInN1YiI6Ijk5NDI2YzJjLWJmOTEtNDcxYS1iYzU0LWI4MmUyZTIzNjkwOSJ9.oND-GnNOn_GsfvbG1oQ9shURsmQoSDiw9bbNN7Nm-aY
+
+### Create Supplier
+POST {{baseurl}}/supplier
+Content-Type: application/json
+Authorization: {{token}}
+
+{
+  "name": "Baterias Moura Teste",
+  "cpf_cnpj": "51409182000190",
+  "address": "S leste Plabaltina GO",
+  "phone": "62 999829196",
+  "email": "mourabateria@example.com"
+}
+
+### Authentication
+POST {{baseurl}}/session
+Content-Type: application/json
+
+{
+	"email": "financeiro.ch@amazoniainter.com.br",
+	"password": "f123456"
+}
+3
+
+### List Suppliers
+GET {{baseurl}}/supplier
+Authorization: {{token}}
+
+### List Supplier with transactions
+GET {{baseurl}}/supplier/with-transactions
+Authorization: {{token}}
+
+
+### Update Supplier
+PUT {{baseurl}}/supplier/35fda915-9d83-4d73-91a6-dade839422ea
+Content-Type: application/json
+Authorization: {{token}}
+
+{
+  "name": "Baterias Moura Teste",
+  "cpf_cnpj": "51409182000190",
+  "email": "mourabateria@example.com",
+  "phone": "62 999829197",
+  "address": "S leste Plabaltina GO"
+}
+
+### Find ONE Supplier
+GET {{baseurl}}/supplier/35fda915-9d83-4d73-91a6-dade839422ea
+Authorization: {{token}}
+
+### Desactive Supplier
+PATCH {{baseurl}}/supplier/c14d219e-efba-43f6-acc1-aefddaec1074
+Authorization: {{token}}
+
+### 

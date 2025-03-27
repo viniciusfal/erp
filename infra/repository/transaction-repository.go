@@ -35,17 +35,18 @@ func toUtc(t *time.Time) *time.Time {
 }
 
 func (tr *TransactionRepository) CreateTransaction(transaction model.Transaction, file multipart.File, fileHeader *multipart.FileHeader) (string, error) {
-
 	var id string
 
+	// Converte PaymentDate para UTC, se não for nil
 	if transaction.Payment_date != nil {
-		// Se Payment_date não for nil, converte para UTC
 		transaction.Payment_date = toUtc(transaction.Payment_date)
 	}
 
+	// Salva o arquivo anexo, se houver
 	if file != nil && fileHeader != nil {
 		filepath, err := services.Savefile(file, fileHeader, "./uploads")
 		if err != nil {
+			fmt.Println("Erro ao salvar o arquivo Anexo: ", err)
 			return "", err
 		}
 		transaction.Annex = &filepath
@@ -53,18 +54,28 @@ func (tr *TransactionRepository) CreateTransaction(transaction model.Transaction
 		transaction.Annex = nil
 	}
 
-	query, err := tr.connection.Prepare("INSERT INTO transactions" +
-		"(id, title, value, type, category,  scheduling, annex, payment_date, pay, details, method, nf, account) " +
-		"VALUES(gen_random_uuid(), $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) RETURNING id")
+	// Query para inserir a transação com os novos campos
+	query, err := tr.connection.Prepare(`
+		INSERT INTO transactions (
+			id, title, value, type, category, scheduling, annex, payment_date, pay, details, method, nf, account,
+			due_date, status, installment, total_installments, supplier_id) VALUES (
+			gen_random_uuid(), $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17
+		) RETURNING id
+	`)
 	if err != nil {
-		fmt.Println(err)
+		fmt.Println("Erro ao preparar a query: ", err)
 		return "", err
 	}
 
-	err = query.QueryRow(transaction.Title, transaction.Value, transaction.Type,
-		transaction.Category, transaction.Scheduling, transaction.Annex, transaction.Payment_date, transaction.Pay, transaction.Details, transaction.Method, transaction.Nf, transaction.Account).Scan(&id)
+	// Executa a query com os novos campos
+	err = query.QueryRow(
+		transaction.Title, transaction.Value, transaction.Type,
+		transaction.Category, transaction.Scheduling, transaction.Annex, transaction.Payment_date,
+		transaction.Pay, transaction.Details, transaction.Method, transaction.Nf, transaction.Account,
+		transaction.DueDate, transaction.Status, transaction.Installment, transaction.TotalInstallments, transaction.SupplierID,
+	).Scan(&id)
 	if err != nil {
-		println(err)
+		fmt.Println(err)
 		return "", err
 	}
 
@@ -81,9 +92,10 @@ func (tr *TransactionRepository) GetTransactions() ([]model.Transaction, error) 
 	query := "SELECT * FROM transactions"
 	rows, err := tr.connection.Query(query)
 	if err != nil {
-		println(err)
+		fmt.Println(err)
 		return []model.Transaction{}, err
 	}
+	defer rows.Close()
 
 	var transactions []model.Transaction
 
@@ -106,6 +118,11 @@ func (tr *TransactionRepository) GetTransactions() ([]model.Transaction, error) 
 			&transaction.Method,
 			&transaction.Nf,
 			&transaction.Account,
+			&transaction.DueDate,
+			&transaction.Status,
+			&transaction.Installment,
+			&transaction.TotalInstallments,
+			&transaction.SupplierID,
 		)
 
 		if err != nil {
@@ -115,8 +132,6 @@ func (tr *TransactionRepository) GetTransactions() ([]model.Transaction, error) 
 
 		transactions = append(transactions, transaction)
 	}
-
-	rows.Close()
 
 	return transactions, nil
 }
@@ -146,6 +161,11 @@ func (tr *TransactionRepository) GetTransactionById(transaction_id string) (*mod
 		&transaction.Method,
 		&transaction.Nf,
 		&transaction.Account,
+		&transaction.DueDate,
+		&transaction.Status,
+		&transaction.Installment,
+		&transaction.TotalInstallments,
+		&transaction.SupplierID,
 	)
 
 	if err != nil {
@@ -161,11 +181,11 @@ func (tr *TransactionRepository) GetTransactionById(transaction_id string) (*mod
 	return &transaction, nil
 }
 
-func (tr *TransactionRepository) GetTransactionsByDate(startDate time.Time, endDate time.Time) ([]*model.Transaction, error) {
+func (tr *TransactionRepository) GetTransactionsByDate(status string, startDate time.Time, endDate time.Time) ([]*model.Transaction, error) {
 
-	query := "SELECT * FROM transactions WHERE payment_date BETWEEN $1 AND $2"
+	query := "SELECT * FROM transactions WHERE status = $1 AND payment_date BETWEEN $2 AND $3 AND payment_date IS NOT NULL"
 
-	rows, err := tr.connection.Query(query, startDate, endDate)
+	rows, err := tr.connection.Query(query, status, startDate, endDate)
 	if err != nil {
 		fmt.Println(err)
 		return nil, err
@@ -193,6 +213,11 @@ func (tr *TransactionRepository) GetTransactionsByDate(startDate time.Time, endD
 			&transaction.Method,
 			&transaction.Nf,
 			&transaction.Account,
+			&transaction.DueDate,
+			&transaction.Status,
+			&transaction.Installment,
+			&transaction.TotalInstallments,
+			&transaction.SupplierID,
 		)
 		if err != nil {
 			fmt.Println(err)
@@ -210,20 +235,132 @@ func (tr *TransactionRepository) GetTransactionsByDate(startDate time.Time, endD
 	return transactions, nil
 }
 
-func (tr *TransactionRepository) SetTransaction(transaction *model.Transaction) (*model.Transaction, error) {
+func (tr *TransactionRepository) GetTodayTransactions(status string) ([]*model.Transaction, error) {
+	now := time.Now()
+	startOfDay := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, now.Location())
+	endOfDay := time.Date(now.Year(), now.Month(), now.Day(), 23, 59, 59, 999999999, now.Location())
 
-	if transaction.Payment_date != nil {
-		transaction.Payment_date = toUtc(transaction.Payment_date)
-	}
-	transaction.Updated_at = transaction.Updated_at.UTC()
-	// old Transaction
-	_, err := tr.GetTransactionById(transaction.ID)
+	return tr.GetTransactionsByDate(status, startOfDay, endOfDay)
+}
+
+func (tr *TransactionRepository) GetCurreentMonthtransactions(status string) ([]*model.Transaction, error) {
+	now := time.Now()
+
+	firstOfMonth := time.Date(now.Year(), now.Month(), 1, 0, 0, 0, 0, now.Location())
+	lastOfMonth := firstOfMonth.AddDate(0, 1, 0)
+
+	return tr.GetTransactionsByDate(status, firstOfMonth, lastOfMonth)
+
+}
+
+func (tr *TransactionRepository) GetLast7DaysTransactions(status string) ([]*model.Transaction, error) {
+	now := time.Now()
+	lasthirdDays := now.AddDate(0, 0, -7)
+
+	return tr.GetTransactionsByDate(status, lasthirdDays, now)
+}
+
+func (tr *TransactionRepository) GetLast30DaysTransactions(status string) ([]*model.Transaction, error) {
+	now := time.Now()
+	last7Days := now.AddDate(0, 0, -30)
+
+	return tr.GetTransactionsByDate(status, last7Days, now)
+}
+
+func (tr *TransactionRepository) GetTransactionForDueDate(startDate time.Time, endDate time.Time) ([]*model.Transaction, error) {
+
+	query := "SELECT * FROM transactions WHERE status = $1 AND due_date BETWEEN $2 AND $3"
+
+	rows, err := tr.connection.Query(query, "aberto", startDate, endDate)
 	if err != nil {
 		fmt.Println(err)
 		return nil, err
 	}
+	defer rows.Close()
 
-	// Update Transaction
+	var transactions []*model.Transaction
+
+	for rows.Next() {
+		var transaction model.Transaction
+
+		err = rows.Scan(
+			&transaction.ID,
+			&transaction.Title,
+			&transaction.Value,
+			&transaction.Type,
+			&transaction.Category,
+			&transaction.Scheduling,
+			&transaction.Annex,
+			&transaction.Payment_date,
+			&transaction.Created_at,
+			&transaction.Updated_at,
+			&transaction.Pay,
+			&transaction.Details,
+			&transaction.Method,
+			&transaction.Nf,
+			&transaction.Account,
+			&transaction.DueDate,
+			&transaction.Status,
+			&transaction.Installment,
+			&transaction.TotalInstallments,
+			&transaction.SupplierID,
+		)
+		if err != nil {
+			fmt.Println(err)
+			return nil, err
+		}
+
+		transactions = append(transactions, &transaction)
+
+	}
+	if err = rows.Err(); err != nil {
+		fmt.Println(err)
+		return nil, err
+	}
+
+	return transactions, nil
+}
+
+func (tr *TransactionRepository) GetDueTodayTransactions() ([]*model.Transaction, error) {
+	now := time.Now()
+	startOfDay := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, now.Location())
+	endOfDay := time.Date(now.Year(), now.Month(), now.Day(), 23, 59, 59, 999999999, now.Location())
+
+	return tr.GetTransactionForDueDate(startOfDay, endOfDay)
+}
+
+func (tr *TransactionRepository) GetCurreentMonthtransactionsDueDate() ([]*model.Transaction, error) {
+	now := time.Now()
+	firstOfMonth := time.Date(now.Year(), now.Month(), 1, 0, 0, 0, 0, now.Location())
+	lastOfMonth := firstOfMonth.AddDate(0, 1, 0)
+
+	return tr.GetTransactionForDueDate(firstOfMonth, lastOfMonth)
+
+}
+
+func (tr *TransactionRepository) GetLast7DaysTransactionsDueDate() ([]*model.Transaction, error) {
+	now := time.Now()
+	lasthirdDays := now.AddDate(0, 0, -7)
+
+	return tr.GetTransactionForDueDate(lasthirdDays, now)
+
+}
+
+func (tr *TransactionRepository) GetLast30DaysTransactionsDueDate() ([]*model.Transaction, error) {
+	now := time.Now()
+	last7Days := now.AddDate(0, 0, -30)
+
+	return tr.GetTransactionForDueDate(last7Days, now)
+}
+
+func (tr *TransactionRepository) SetTransaction(transaction *model.Transaction) (*model.Transaction, error) {
+	// Converte PaymentDate para UTC, se não for nil
+	if transaction.Payment_date != nil {
+		transaction.Payment_date = toUtc(transaction.Payment_date)
+	}
+	transaction.Updated_at = time.Now().UTC()
+
+	// Query para atualizar a transação com os novos campos
 	query, err := tr.connection.Prepare(`
 		UPDATE transactions
 		SET 
@@ -239,17 +376,28 @@ func (tr *TransactionRepository) SetTransaction(transaction *model.Transaction) 
 			details = $9,
 			method = $10,
 			nf = $11,
-			account = $12
+			account = $12,
+			due_date = $13,
+			status = $14,
+			installment = $15,
+			total_installments = $16,
+			supplier_id = $17
 		WHERE
-			id = $13
-			`)
+			id = $18
+	`)
 	if err != nil {
 		fmt.Println(err)
 		return nil, err
 	}
 
-	_, err = query.Exec(transaction.Title, transaction.Value, transaction.Type, transaction.Category,
-		transaction.Scheduling, transaction.Annex, transaction.Payment_date, transaction.Pay, transaction.Details, transaction.Method, transaction.Nf, transaction.Account, transaction.ID)
+	// Executa a query com os novos campos
+	_, err = query.Exec(
+		transaction.Title, transaction.Value, transaction.Type, transaction.Category,
+		transaction.Scheduling, transaction.Annex, transaction.Payment_date, transaction.Pay,
+		transaction.Details, transaction.Method, transaction.Nf, transaction.Account,
+		transaction.DueDate, transaction.Status, transaction.Installment, transaction.TotalInstallments, transaction.SupplierID,
+		transaction.ID,
+	)
 	if err != nil {
 		fmt.Println(err)
 		return nil, err
@@ -467,4 +615,138 @@ func parseCurrency(value string) (float64, bool) {
 		parsedValue *= -1 // Mantém o valor negativo
 	}
 	return parsedValue, isNegative
+}
+
+func (tr *TransactionRepository) CreateInstallmentTransactions(
+	totalValue float64,
+	totalInstallments int,
+	title string,
+	details string,
+	transactionType string,
+	initialDueDate time.Time,
+	status string,
+	category string,
+) ([]string, error) {
+	if totalInstallments <= 0 {
+		return nil, fmt.Errorf("totalInstallments must be greater than zero")
+	}
+
+	var transactionIDs []string
+	installmentValue := totalValue / float64(totalInstallments)
+	dueDate := initialDueDate
+
+	for i := 1; i <= totalInstallments; i++ {
+		transaction := model.Transaction{
+			Title:             title,
+			Details:           details,
+			Value:             installmentValue,
+			Type:              transactionType,
+			Category:          category,
+			DueDate:           &dueDate,
+			Status:            &status,
+			Installment:       &i,
+			TotalInstallments: &totalInstallments,
+			Created_at:        time.Now(),
+			Updated_at:        time.Now(),
+		}
+
+		// Create the transaction in the database
+		id, err := tr.CreateTransaction(transaction, nil, nil)
+		if err != nil {
+			return nil, fmt.Errorf("failed to create installment transaction: %w", err)
+		}
+
+		transactionIDs = append(transactionIDs, id)
+		dueDate = dueDate.AddDate(0, 1, 0) // Next installment in 1 month
+	}
+
+	return transactionIDs, nil
+}
+
+func (tr *TransactionRepository) CreateLowTransaction(
+	totalValue float64,
+	totalInstallments int,
+	title string,
+	details string,
+	transactionType string,
+	initialDueDate time.Time,
+	payment_date time.Time,
+	status string,
+	category string,
+	nf string,
+	pay bool,
+	annex string,
+	method string,
+	account string,
+) ([]string, error) {
+	if totalInstallments <= 0 {
+		return nil, fmt.Errorf("totalInstallments must be greater than zero")
+	}
+
+	var transactionIDs []string
+	installmentValue := totalValue / float64(totalInstallments)
+	dueDate := initialDueDate
+
+	for i := 1; i <= totalInstallments; i++ {
+		transaction := model.Transaction{
+			Title:             title,
+			Details:           details,
+			Value:             installmentValue,
+			Type:              transactionType,
+			Category:          category,
+			DueDate:           &dueDate,
+			Payment_date:      &payment_date,
+			Status:            &status,
+			Installment:       &i,
+			TotalInstallments: &totalInstallments,
+			Nf:                nf,
+			Annex:             &annex,
+			Pay:               pay,
+			Method:            method,
+			Account:           account,
+			Created_at:        time.Now(),
+			Updated_at:        time.Now(),
+		}
+
+		// Create the transaction in the database
+		id, err := tr.CreateTransaction(transaction, nil, nil)
+		if err != nil {
+			return nil, fmt.Errorf("failed to create installment transaction: %w", err)
+		}
+
+		transactionIDs = append(transactionIDs, id)
+		dueDate = dueDate.AddDate(0, 1, 0) // Next installment in 1 month
+	}
+
+	return transactionIDs, nil
+}
+
+func (tr *TransactionRepository) MarkLowTransaction(id string, newStatus string, payment_date *time.Time) (*model.Transaction, error) {
+
+	// old Transaction
+	transaction, err := tr.GetTransactionById(id)
+	if err != nil {
+		fmt.Println(err)
+		return nil, err
+	}
+
+	query, err := tr.connection.Prepare(`UPDATE transactions SET status = $1, payment_date = $2 WHERE id = $3 RETURNING id, status, payment_date`)
+	if err != nil {
+		fmt.Println(err)
+		return nil, err
+	}
+
+	defer query.Close()
+
+	err = query.QueryRow(newStatus, payment_date, id).Scan(
+		&transaction.ID,
+		&transaction.Status,
+		&transaction.Payment_date,
+	)
+	if err != nil {
+		fmt.Println(err)
+		return nil, err
+	}
+
+	return transaction, nil
 }

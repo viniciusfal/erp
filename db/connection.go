@@ -10,11 +10,11 @@ import (
 )
 
 func ConnectDB() (*sql.DB, error) {
-	host := "monorail.proxy.rlwy.net"              // Por exemplo: "localhost" ou URL do banco no Render
-	port := "8000"                                 // Exemplo: "5432"
-	user := "postgres"                             // Exemplo: "postgres"
-	password := "wIZYSiJzhYYAHMFmEAJLhytFjCndnFyJ" // Exemplo: "your_password"
-	dbname := "railway"                            // Exemplo: "your_db_name"
+	host := "localhost"    // Por exemplo: "localhost" ou URL do banco no railways
+	port := "5432"         // Exemplo: "5432"
+	user := "postgres"     // Exemplo: "postgres"
+	password := "postgres" // Exemplo: "your_password"
+	dbname := "postgres"   // Exemplo: "your_db_name"
 
 	// Formatar a string de conexão com PostgreSQL
 	psqlInfo := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
