@@ -237,10 +237,8 @@ func (tr *TransactionRepository) GetTransactionsByDate(status string, startDate 
 
 func (tr *TransactionRepository) GetTodayTransactions(status string) ([]*model.Transaction, error) {
 	now := time.Now()
-	startOfDay := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, now.Location())
-	endOfDay := time.Date(now.Year(), now.Month(), now.Day(), 23, 59, 59, 999999999, now.Location())
 
-	return tr.GetTransactionsByDate(status, startOfDay, endOfDay)
+	return tr.GetTransactionsByDate(status, now, now)
 }
 
 func (tr *TransactionRepository) GetCurreentMonthtransactions(status string) ([]*model.Transaction, error) {

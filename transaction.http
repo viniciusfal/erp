@@ -1,5 +1,5 @@
 @baseurl = http://localhost:8000/api
-@token = Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NDI5MDU4MzMsImlhdCI6MTc0MjgxOTQzMywiaXNzIjoiZXJwLWFwaSIsInN1YiI6Ijk5NDI2YzJjLWJmOTEtNDcxYS1iYzU0LWI4MmUyZTIzNjkwOSJ9.lCtBDQwzXvWuBo27DeqGubqe-VMN5--HmfEyW2dbOSU
+@token = Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NDMyNzA0NzQsImlhdCI6MTc0MzE4NDA3NCwiaXNzIjoiZXJwLWFwaSIsInN1YiI6Ijk5NDI2YzJjLWJmOTEtNDcxYS1iYzU0LWI4MmUyZTIzNjkwOSJ9.fg21ayBkAMKQ71NB1_r08s0SNKk-Hi8Bg2PGi_lhdfk
 POST {{baseurl}}/session
 Content-Type: application/json
 
@@ -119,10 +119,10 @@ Authorization: {{token}}
 {
   "total_value": 28000.00,
   "total_installments": 1,
-  "title": "Emprestimo Santander 6",
+  "title": "Emprestimo BB",
 	"type": "saida",
-  "initial_due_date": "2025-03-24T00:00:00Z",
-  "payment_date": "2025-03-25T05:00:00Z",
+  "initial_due_date": "2025-03-28T05:00:00Z",
+  "payment_date": "2025-03-28T05:00:00Z",
   "status": "pago",
   "category": "Eletrônicos",
 	"method": "Cartão",
