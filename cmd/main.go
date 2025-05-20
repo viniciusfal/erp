@@ -8,7 +8,6 @@ import (
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/viniciusfal/erp/db"
-	"github.com/viniciusfal/erp/http/middleware"
 	"github.com/viniciusfal/erp/http/routes"
 )
 
@@ -37,7 +36,7 @@ func main() {
 		routes.UserRoutes(apiPublic) // Aqui, a rota de login pode ser acessada sem JWT
 	}
 
-	api := server.Group("/api", middleware.JWTMiddleware())
+	api := server.Group("/api")
 	{
 		routes.TransactionRoutes(api)
 		routes.MetaRoutes(api)

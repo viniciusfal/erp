@@ -338,17 +338,16 @@ func (tr *TransactionRepository) GetCurreentMonthtransactionsDueDate() ([]*model
 
 func (tr *TransactionRepository) GetLast7DaysTransactionsDueDate() ([]*model.Transaction, error) {
 	now := time.Now()
-	lasthirdDays := now.AddDate(0, 0, -7)
+	lastSevenDays := now.AddDate(0, 0, -7)
 
-	return tr.GetTransactionForDueDate(lasthirdDays, now)
-
+	return tr.GetTransactionForDueDate(lastSevenDays, now)
 }
 
 func (tr *TransactionRepository) GetLast30DaysTransactionsDueDate() ([]*model.Transaction, error) {
 	now := time.Now()
-	last7Days := now.AddDate(0, 0, -30)
+	last30Days := now.AddDate(0, 0, -30)
 
-	return tr.GetTransactionForDueDate(last7Days, now)
+	return tr.GetTransactionForDueDate(last30Days, now)
 }
 
 func (tr *TransactionRepository) SetTransaction(transaction *model.Transaction) (*model.Transaction, error) {
