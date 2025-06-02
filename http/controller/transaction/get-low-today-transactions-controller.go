@@ -18,7 +18,7 @@ func NewLGetLowTodayController(repository repository.TransactionRepository) GetL
 }
 
 func (tr *GetLowTodayController) GetLowBydateToday(ctx *gin.Context) {
-	status := ctx.Query("status")
+	status := ctx.QueryArray("status")
 
 	transactions, err := tr.transactionRepository.GetTodayTransactions(status)
 	if err != nil {

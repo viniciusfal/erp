@@ -18,7 +18,7 @@ func NewLowGetLastSevenDays(repository repository.TransactionRepository) GetLowL
 }
 
 func (tr *GetLowLastSevenDays) GetTransactionByDate(ctx *gin.Context) {
-	status := ctx.Query("status")
+	status := ctx.QueryArray("status")
 
 	transactions, err := tr.transactionRepository.GetLast7DaysTransactions(status)
 	if err != nil {

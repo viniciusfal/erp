@@ -8,7 +8,7 @@ type Transaction struct {
 	ID                string     `json:"transaction_id"`
 	Title             string     `json:"title"`
 	Value             float64    `json:"value"`
-	Type              string     `json:"type"` // "pagar" ou "receber"
+	Type              string     `json:"type"` // "saida" ou "entrada"
 	Category          string     `json:"category"`
 	Scheduling        bool       `json:"scheduling"`
 	Annex             *string    `json:"annex"`

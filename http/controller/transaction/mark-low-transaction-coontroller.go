@@ -22,6 +22,9 @@ func (tc *MarkLowTransactionController) MarkLow(ctx *gin.Context) {
 	var request struct {
 		Status       string     `json:"status" binding:"required"`
 		Payment_date *time.Time `json:"payment_date"`
+		Method       string     `json:"method"`
+		NF           *string    `json:"nf"`
+		Account      *string    `json:"account"`
 	}
 
 	transactionId := ctx.Param("transactionId")
@@ -30,7 +33,7 @@ func (tc *MarkLowTransactionController) MarkLow(ctx *gin.Context) {
 		return
 	}
 
-	updateTransactionToLow, err := tc.TransactionRepository.MarkLowTransaction(transactionId, request.Status, request.Payment_date)
+	updateTransactionToLow, err := tc.TransactionRepository.MarkLowTransaction(transactionId, request.Status, request.Payment_date, request.Method, request.NF, request.Account)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Erro ao atualizar o status: " + err.Error()})
 		return

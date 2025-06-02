@@ -18,7 +18,9 @@ func NewLGetDueLastThirdyDaysController(repository repository.TransactionReposit
 }
 
 func (tr *GetDueLastThirdyDaysController) GetDueTransactions(ctx *gin.Context) {
-	transactions, err := tr.transactionRepository.GetLast30DaysTransactionsDueDate()
+	typeTransaction := ctx.Query("type")
+
+	transactions, err := tr.transactionRepository.GetLast30DaysTransactionsDueDate(typeTransaction)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, err)
 		return

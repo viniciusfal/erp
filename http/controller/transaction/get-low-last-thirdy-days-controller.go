@@ -18,7 +18,7 @@ func NewLGetLowThirdyDays(repository repository.TransactionRepository) GetLowThi
 }
 
 func (tr *GetLowThirdyDays) GetTransactionByDate(ctx *gin.Context) {
-	status := ctx.Query("status")
+	status := ctx.QueryArray("status")
 
 	transactions, err := tr.transactionRepository.GetLast30DaysTransactions(status)
 	if err != nil {

@@ -101,29 +101,29 @@ Content-Type: application/json
 Authorization: {{token}}
 
 {
-  "total_value": 1000.00,
-  "total_installments": 1,
-  "title": "Sigo bank Restituição",
-	"details": "Teste de uma Entrada a receber...",
-	"type": "entrada",
-  "initial_due_date": "2025-03-24T00:00:00Z",
+  "total_value": 200.00,
+  "total_installments": 2,
+  "title": "teste de parcelas xx",
+	"details": "Teste de uma saidas a pagar...",
+	"type": "saida",
+  "initial_due_date": "2025-05-26T15:00:00Z",
   "status": "aberto",
-  "category": "Eletrônicos"
+  "category": "teste"
 }
 
 ### Create Transaction Low directly
-POST {{baseurl}}/transaction/low	
+POST {{baseurl}}/transaction/
 Content-Type: application/json
 Authorization: {{token}}
 
 {
   "total_value": 28000.00,
-  "total_installments": 1,
+  "total_installments": 2,
   "title": "Emprestimo BB",
 	"type": "saida",
-  "initial_due_date": "2025-03-28T05:00:00Z",
+  "initial_due_date": "2025-03-26T05:00:00Z",
   "payment_date": "2025-03-28T05:00:00Z",
-  "status": "pago",
+  "status": "aberto",
   "category": "Eletrônicos",
 	"method": "Cartão",
 	"account": "Banco do Brasil"

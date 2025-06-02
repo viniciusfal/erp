@@ -18,7 +18,9 @@ func NewGetDueLastSevenMonthController(repository repository.TransactionReposito
 }
 
 func (tr *GetDueLastSevenMonthController) GetTransactionByDate(ctx *gin.Context) {
-	transactions, err := tr.transactionRepository.GetLast7DaysTransactionsDueDate()
+	typeTransaction := ctx.Query("type")
+
+	transactions, err := tr.transactionRepository.GetLast7DaysTransactionsDueDate(typeTransaction)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, err)
 		return

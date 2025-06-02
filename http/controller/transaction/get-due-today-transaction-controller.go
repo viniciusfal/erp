@@ -18,7 +18,9 @@ func NewGetDueTodayController(repository repository.TransactionRepository) GetDu
 }
 
 func (tr *GetDueTodayController) GetTransactionToday(ctx *gin.Context) {
-	transactions, err := tr.transactionRepository.GetDueTodayTransactions()
+	typeTransaction := ctx.Query("type")
+
+	transactions, err := tr.transactionRepository.GetDueTodayTransactions(typeTransaction)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, err)
 		return

@@ -18,7 +18,7 @@ func NewGetLowCurrentMonth(repository repository.TransactionRepository) GetLowCu
 }
 
 func (tr *GetLowCurrentMonthController) GetTransactionCurrent(ctx *gin.Context) {
-	status := ctx.Query("status")
+	status := ctx.QueryArray("status")
 
 	transactions, err := tr.transactionRepository.GetCurreentMonthtransactions(status)
 	if err != nil {

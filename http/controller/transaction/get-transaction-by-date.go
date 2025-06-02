@@ -27,7 +27,7 @@ func (tc *GetTransactionByDateController) GetTransactionByDate(ctx *gin.Context)
 	formattedStartDate, _ := time.Parse("2006-01-02", startDate)
 	formattedEndDate, _ := time.Parse("2006-01-02", endDate)
 
-	transactions, err := tc.getTransactionByDateUseCase.GetTransactionByDate(status, formattedStartDate, formattedEndDate)
+	transactions, err := tc.getTransactionByDateUseCase.GetTransactionByDate([]string{status}, formattedStartDate, formattedEndDate)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, err)
 		return

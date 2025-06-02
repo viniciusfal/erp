@@ -17,7 +17,7 @@ func NewGetTransactionByDateUseCase(repo repository.TransactionRepository) GetTr
 	}
 }
 
-func (tu *GetTransactionByDateUseCase) GetTransactionByDate(status string, startDate time.Time, endDate time.Time) ([]*model.Transaction, error) {
+func (tu *GetTransactionByDateUseCase) GetTransactionByDate(status []string, startDate time.Time, endDate time.Time) ([]*model.Transaction, error) {
 	transactions, err := tu.repository.GetTransactionsByDate(status, startDate, endDate)
 	if err != nil {
 		return nil, err

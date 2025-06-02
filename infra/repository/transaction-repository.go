@@ -9,6 +9,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/lib/pq"
 	"github.com/viniciusfal/erp/infra/model"
 
 	"github.com/viniciusfal/erp/services"
@@ -137,7 +138,6 @@ func (tr *TransactionRepository) GetTransactions() ([]model.Transaction, error) 
 }
 
 func (tr *TransactionRepository) GetTransactionById(transaction_id string) (*model.Transaction, error) {
-
 	query, err := tr.connection.Prepare("SELECT * FROM transactions WHERE id = $1")
 	if err != nil {
 		fmt.Println(err)
@@ -181,11 +181,10 @@ func (tr *TransactionRepository) GetTransactionById(transaction_id string) (*mod
 	return &transaction, nil
 }
 
-func (tr *TransactionRepository) GetTransactionsByDate(status string, startDate time.Time, endDate time.Time) ([]*model.Transaction, error) {
+func (tr *TransactionRepository) GetTransactionsByDate(status []string, startDate, endDate time.Time) ([]*model.Transaction, error) {
+	query := "SELECT * FROM transactions WHERE status = ANY($1) AND payment_date BETWEEN $2 AND $3 AND payment_date IS NOT NULL"
 
-	query := "SELECT * FROM transactions WHERE status = $1 AND payment_date BETWEEN $2 AND $3 AND payment_date IS NOT NULL"
-
-	rows, err := tr.connection.Query(query, status, startDate, endDate)
+	rows, err := tr.connection.Query(query, pq.Array(status), startDate, endDate)
 	if err != nil {
 		fmt.Println(err)
 		return nil, err
@@ -223,9 +222,7 @@ func (tr *TransactionRepository) GetTransactionsByDate(status string, startDate 
 			fmt.Println(err)
 			return nil, err
 		}
-
 		transactions = append(transactions, &transaction)
-
 	}
 	if err = rows.Err(); err != nil {
 		fmt.Println(err)
@@ -235,41 +232,42 @@ func (tr *TransactionRepository) GetTransactionsByDate(status string, startDate 
 	return transactions, nil
 }
 
-func (tr *TransactionRepository) GetTodayTransactions(status string) ([]*model.Transaction, error) {
+func (tr *TransactionRepository) GetTodayTransactions(status []string) ([]*model.Transaction, error) {
 	now := time.Now()
+	startOfDay := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, now.Location())
+	endOfDay := time.Date(now.Year(), now.Month(), now.Day(), 23, 59, 59, 999999999, now.Location())
 
-	return tr.GetTransactionsByDate(status, now, now)
+	return tr.GetTransactionsByDate(status, startOfDay, endOfDay)
 }
 
-func (tr *TransactionRepository) GetCurreentMonthtransactions(status string) ([]*model.Transaction, error) {
+func (tr *TransactionRepository) GetCurreentMonthtransactions(status []string) ([]*model.Transaction, error) {
 	now := time.Now()
 
 	firstOfMonth := time.Date(now.Year(), now.Month(), 1, 0, 0, 0, 0, now.Location())
 	lastOfMonth := firstOfMonth.AddDate(0, 1, 0)
 
 	return tr.GetTransactionsByDate(status, firstOfMonth, lastOfMonth)
-
 }
 
-func (tr *TransactionRepository) GetLast7DaysTransactions(status string) ([]*model.Transaction, error) {
+func (tr *TransactionRepository) GetLast7DaysTransactions(status []string) ([]*model.Transaction, error) {
 	now := time.Now()
 	lasthirdDays := now.AddDate(0, 0, -7)
 
 	return tr.GetTransactionsByDate(status, lasthirdDays, now)
 }
 
-func (tr *TransactionRepository) GetLast30DaysTransactions(status string) ([]*model.Transaction, error) {
+func (tr *TransactionRepository) GetLast30DaysTransactions(status []string) ([]*model.Transaction, error) {
 	now := time.Now()
 	last7Days := now.AddDate(0, 0, -30)
 
 	return tr.GetTransactionsByDate(status, last7Days, now)
 }
 
-func (tr *TransactionRepository) GetTransactionForDueDate(startDate time.Time, endDate time.Time) ([]*model.Transaction, error) {
+func (tr *TransactionRepository) GetTransactionForDueDate(startDate time.Time, endDate time.Time, typeTransaction string) ([]*model.Transaction, error) {
 
-	query := "SELECT * FROM transactions WHERE status = $1 AND due_date BETWEEN $2 AND $3"
+	query := "SELECT * FROM transactions WHERE status = $1 AND type = $2 AND due_date BETWEEN $3 AND $4"
 
-	rows, err := tr.connection.Query(query, "aberto", startDate, endDate)
+	rows, err := tr.connection.Query(query, "aberto", typeTransaction, startDate, endDate)
 	if err != nil {
 		fmt.Println(err)
 		return nil, err
@@ -319,35 +317,35 @@ func (tr *TransactionRepository) GetTransactionForDueDate(startDate time.Time, e
 	return transactions, nil
 }
 
-func (tr *TransactionRepository) GetDueTodayTransactions() ([]*model.Transaction, error) {
+func (tr *TransactionRepository) GetDueTodayTransactions(typeTransaction string) ([]*model.Transaction, error) {
 	now := time.Now()
 	startOfDay := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, now.Location())
 	endOfDay := time.Date(now.Year(), now.Month(), now.Day(), 23, 59, 59, 999999999, now.Location())
 
-	return tr.GetTransactionForDueDate(startOfDay, endOfDay)
+	return tr.GetTransactionForDueDate(startOfDay, endOfDay, typeTransaction)
 }
 
-func (tr *TransactionRepository) GetCurreentMonthtransactionsDueDate() ([]*model.Transaction, error) {
+func (tr *TransactionRepository) GetCurreentMonthtransactionsDueDate(typeTransaction string) ([]*model.Transaction, error) {
 	now := time.Now()
 	firstOfMonth := time.Date(now.Year(), now.Month(), 1, 0, 0, 0, 0, now.Location())
 	lastOfMonth := firstOfMonth.AddDate(0, 1, 0)
 
-	return tr.GetTransactionForDueDate(firstOfMonth, lastOfMonth)
+	return tr.GetTransactionForDueDate(firstOfMonth, lastOfMonth, typeTransaction)
 
 }
 
-func (tr *TransactionRepository) GetLast7DaysTransactionsDueDate() ([]*model.Transaction, error) {
+func (tr *TransactionRepository) GetLast7DaysTransactionsDueDate(typeTransaction string) ([]*model.Transaction, error) {
 	now := time.Now()
 	lastSevenDays := now.AddDate(0, 0, -7)
 
-	return tr.GetTransactionForDueDate(lastSevenDays, now)
+	return tr.GetTransactionForDueDate(lastSevenDays, now, typeTransaction)
 }
 
-func (tr *TransactionRepository) GetLast30DaysTransactionsDueDate() ([]*model.Transaction, error) {
+func (tr *TransactionRepository) GetLast30DaysTransactionsDueDate(typeTransaction string) ([]*model.Transaction, error) {
 	now := time.Now()
 	last30Days := now.AddDate(0, 0, -30)
 
-	return tr.GetTransactionForDueDate(last30Days, now)
+	return tr.GetTransactionForDueDate(last30Days, now, typeTransaction)
 }
 
 func (tr *TransactionRepository) SetTransaction(transaction *model.Transaction) (*model.Transaction, error) {
@@ -718,7 +716,7 @@ func (tr *TransactionRepository) CreateLowTransaction(
 	return transactionIDs, nil
 }
 
-func (tr *TransactionRepository) MarkLowTransaction(id string, newStatus string, payment_date *time.Time) (*model.Transaction, error) {
+func (tr *TransactionRepository) MarkLowTransaction(id string, newStatus string, payment_date *time.Time, method string, nf *string, account *string) (*model.Transaction, error) {
 
 	// old Transaction
 	transaction, err := tr.GetTransactionById(id)
@@ -727,18 +725,21 @@ func (tr *TransactionRepository) MarkLowTransaction(id string, newStatus string,
 		return nil, err
 	}
 
-	query, err := tr.connection.Prepare(`UPDATE transactions SET status = $1, payment_date = $2 WHERE id = $3 RETURNING id, status, payment_date`)
+	query, err := tr.connection.Prepare(`UPDATE transactions SET status = $1, payment_date = $2, method = $3, nf = $4,
+	 account = $5, pay = true WHERE id = $6 RETURNING id, status, payment_date, method, nf, account`)
 	if err != nil {
 		fmt.Println(err)
 		return nil, err
 	}
-
 	defer query.Close()
 
-	err = query.QueryRow(newStatus, payment_date, id).Scan(
+	err = query.QueryRow(newStatus, payment_date, method, nf, account, id).Scan(
 		&transaction.ID,
 		&transaction.Status,
 		&transaction.Payment_date,
+		&transaction.Method,
+		&transaction.Nf,
+		&transaction.Account,
 	)
 	if err != nil {
 		fmt.Println(err)

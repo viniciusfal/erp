@@ -18,8 +18,9 @@ func NewGetDueCurrentMonthController(repository repository.TransactionRepository
 }
 
 func (tr *GetDueCurrentMonthController) GetDueCurrent(ctx *gin.Context) {
+	typeTransaction := ctx.Query("type")
 
-	transactions, err := tr.transactionRepository.GetCurreentMonthtransactionsDueDate()
+	transactions, err := tr.transactionRepository.GetCurreentMonthtransactionsDueDate(typeTransaction)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, err)
 		return
