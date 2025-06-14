@@ -46,10 +46,12 @@ func main() {
 
 	fmt.Printf("Banco de dados conectado com sucesso: %v\n", dbConnection)
 
-	port := os.Getenv("PGPORT")
+	port := os.Getenv("DBPORT")
 	if port == "" {
-		port = "8000" // Porta padrão para desenvolvimento
+		port = "8000"
 	}
+
+	server.Run("0.0.0.0:" + port) // Escuta em todos os IPs
 
 	server.Run(":" + port)
 }

@@ -156,3 +156,14 @@ Authorization: {{token}}
 ### GET due By Date last Thirty Days
 GET {{baseurl}}/transaction/byDate/due/lastThird
 Authorization: {{token}}
+
+### 
+POST {{baseurl}}/user/
+Content-Type: application/json
+Authorization: {{token}}
+
+{
+  "name": "Vinicius",
+  "password": "12345678",
+  "email": "viniciusps178@gmail.com"
+}
