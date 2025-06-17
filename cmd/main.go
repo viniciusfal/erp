@@ -28,12 +28,12 @@ func main() {
 	server.MaxMultipartMemory = 12 << 10 // 20 MB
 
 	// Servir a pasta 'uploads' como estática
-
 	server.Static("/uploads", "./uploads")
 
 	apiPublic := server.Group("/api")
 	{
-		routes.UserRoutes(apiPublic) // Aqui, a rota de login pode ser acessada sem JWT
+		routes.UserRoutes(apiPublic)
+		routes.CashierRoutes(apiPublic)
 	}
 
 	api := server.Group("/api")
@@ -52,6 +52,4 @@ func main() {
 	}
 
 	server.Run("0.0.0.0:" + port) // Escuta em todos os IPs
-
-	server.Run(":" + port)
 }
