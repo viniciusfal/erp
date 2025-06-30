@@ -31,7 +31,7 @@ func (ur *UserRepository) CreateUser(user model.User) (string, error) {
 	queryId.QueryRow(user.Email)
 
 	query, err := ur.connection.Prepare("INSERT INTO public.users" +
-		"(id, name, password, email, rope) " +
+		"(id, name, password, email, role) " +
 		"VALUES(gen_random_uuid(), $1, $2, $3, $4) RETURNING id")
 
 	if err != nil {
@@ -40,7 +40,7 @@ func (ur *UserRepository) CreateUser(user model.User) (string, error) {
 	}
 	defer query.Close()
 
-	err = query.QueryRow(user.Name, user.Password, user.Email, user.Rope).Scan(&id)
+	err = query.QueryRow(user.Name, user.Password, user.Email, user.Role).Scan(&id)
 	if err != nil {
 		fmt.Println(err)
 		return "", err
@@ -69,7 +69,7 @@ func (ur *UserRepository) GetUsers() ([]model.User, error) {
 			&user.Name,
 			&user.Password,
 			&user.Email,
-			&user.Rope,
+			&user.Role,
 		)
 
 		if err != nil {
@@ -99,7 +99,7 @@ func (ur *UserRepository) GetUserById(id string) (*model.User, error) {
 		&user.Name,
 		&user.Password,
 		&user.Email,
-		&user.Rope,
+		&user.Role,
 	)
 
 	if err != nil {
@@ -117,8 +117,8 @@ func (ur *UserRepository) CreateSession(email string, password string) (*model.U
 	var user model.User
 
 	// Prepare a consulta usando o email
-	query := "SELECT id, email, password, name, rope FROM users WHERE email = $1"
-	err := ur.connection.QueryRow(query, email).Scan(&user.ID, &user.Email, &user.Password, &user.Name, &user.Rope)
+	query := "SELECT id, email, password, name, role FROM users WHERE email = $1"
+	err := ur.connection.QueryRow(query, email).Scan(&user.ID, &user.Email, &user.Password, &user.Name, &user.Role)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			// Se não encontrar nenhum usuário, retorne um erro apropriado

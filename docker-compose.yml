@@ -1,0 +1,51 @@
+version: '3.7'
+
+services:
+  db-erp:
+    image: bitnami/postgresql:latest
+    environment:
+      - POSTGRESQL_USERNAME=postgres
+      - POSTGRESQL_PASSWORD=postgres
+      - POSTGRESQL_DATABASE=postgres
+    ports:
+      - '5432:5432'  # Expondo PostgreSQL na porta 5432
+    volumes:
+      - postgres_data:/bitnami/postgresql
+    networks:
+      - erp-network
+
+  api:
+    build:
+      context: .  # Diretório raiz do projeto (onde está o Dockerfile)
+      dockerfile: Dockerfile
+    ports:
+      - '8000:8000'  # API exposta na porta 8000
+    depends_on:
+      - db-erp
+    environment:
+      - DB_HOST=db-erp  # Nome do serviço do PostgreSQL no compose
+      - DB_PORT=5432
+      - DB_USER=postgres
+      - DB_PASSWORD=postgres
+      - DB_NAME=postgres
+    networks:
+      - erp-network
+    restart: unless-stopped
+
+  cloudflare:
+    container_name: cloudflare
+    image: cloudflare/cloudflared:latest
+    command: tunnel --no-autoupdate run --token eyJhIjoiNGY2MDgzMDFlZTk5MzNmNzk1ODVkOGZmYjA4MTE3OWEiLCJ0IjoiZDQxYzg5YmUtZmNmZC00OGM0LTgxNDAtMjdkOGFmY2UwMDU4IiwicyI6Ik9UbG1NV0UwWkRVdFpqWTBaaTAwTmpJM0xUaGtOR1V0WlRZM01EQXhOamd4TlRBeCJ9
+    depends_on:
+      - api
+    networks:
+      - erp-network
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+    driver: local
+
+networks:
+  erp-network:
+    driver: bridge

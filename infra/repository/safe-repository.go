@@ -21,8 +21,8 @@ func NewSafeRepository(connection *sql.DB) SafeRepository {
 func (sr *SafeRepository) CreateSafe(safe model.Safe) (string, error) {
 	var id string
 
-	query, err := sr.connection.Prepare("INSERT INTO safe (id, send_date, send_amount, active)" +
-		"VALUES(gen_random_uuid(), $1, $2, $3) RETURNING id")
+	query, err := sr.connection.Prepare("INSERT INTO safe (id, send_date, send_amount, active, code, resp, details)" +
+		"VALUES(gen_random_uuid(), $1, $2, $3, $4, $5, $6) RETURNING id")
 	if err != nil {
 		fmt.Println(err)
 		return "", nil
@@ -30,7 +30,7 @@ func (sr *SafeRepository) CreateSafe(safe model.Safe) (string, error) {
 
 	defer query.Close()
 
-	err = query.QueryRow(safe.Send_date, safe.Send_amount, safe.Active).Scan(&id)
+	err = query.QueryRow(safe.Send_date, safe.Send_amount, safe.Active, safe.Code, safe.Resp, safe.Details).Scan(&id)
 	if err != nil {
 		fmt.Println(err)
 		return "", nil
@@ -40,7 +40,7 @@ func (sr *SafeRepository) CreateSafe(safe model.Safe) (string, error) {
 }
 
 func (sr *SafeRepository) GetSafes() ([]model.Safe, error) {
-	query := "SELECT * FROM safe"
+	query := "SELECT * FROM safe ORDER BY send_date"
 
 	rows, err := sr.connection.Query(query)
 	if err != nil {
@@ -58,6 +58,9 @@ func (sr *SafeRepository) GetSafes() ([]model.Safe, error) {
 			&safe.Send_date,
 			&safe.Send_amount,
 			&safe.Active,
+			&safe.Code,
+			&safe.Resp,
+			&safe.Details,
 		)
 
 		if err != nil {
@@ -118,7 +121,7 @@ func (sr *SafeRepository) SetSafe(safe *model.Safe) (*model.Safe, error) {
 }
 
 func (sr *SafeRepository) GetSafeByDate(startDate time.Time, endDate time.Time) ([]*model.Safe, error) {
-	query := "SELECT * FROM safe WHERE send_date BETWEEN $1 AND $2"
+	query := "SELECT * FROM safe WHERE send_date BETWEEN $1 AND $2 ORDER BY send_date"
 
 	rows, err := sr.connection.Query(query, startDate, endDate)
 	if err != nil {
@@ -138,6 +141,9 @@ func (sr *SafeRepository) GetSafeByDate(startDate time.Time, endDate time.Time) 
 			&safe.Send_date,
 			&safe.Send_amount,
 			&safe.Active,
+			&safe.Code,
+			&safe.Resp,
+			&safe.Details,
 		)
 
 		if err != nil {

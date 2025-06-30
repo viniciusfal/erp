@@ -5,7 +5,7 @@ import (
 	"github.com/viniciusfal/erp/factories"
 )
 
-func MetaRoutes(router *gin.Engine) {
+func MetaRoutes(router *gin.RouterGroup) {
 	CreateMetaController := factories.MakeMeta()
 	GetMetasController := factories.MakeMetas()
 	GetMetaByMonth := factories.MakeGetMetaByMonth()

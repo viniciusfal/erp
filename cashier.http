@@ -1,0 +1,37 @@
+@baseurl = http://localhost:8000/api
+
+POST {{baseurl}}/cashier
+Content-Type: application/json
+
+{
+  "username": "Raul",
+  "code": "123456",
+  "rope": "admin"
+} 
+###
+
+GET {{baseurl}}/cashier
+###
+
+GET {{baseurl}}/cashier/c97bc1a2-25a4-457d-ae16-88a7843d95a4
+###
+
+GET {{baseurl}}/cashier/user/Raul
+###
+
+PATCH {{baseurl}}/cashier/c97bc1a2-25a4-457d-ae16-88a7843d95a4
+Content-Type: application/json
+
+{
+  "code": "1234!"
+}
+###
+
+PATCH {{baseurl}}/cashier/user/c97bc1a2-25a4-457d-ae16-88a7843d95a4
+Content-Type: application/json
+
+{
+  "active": true
+}
+
+
