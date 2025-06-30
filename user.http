@@ -1,0 +1,22 @@
+@baseurl = http://localhost:8000/api
+
+POST {{baseurl}}/user
+Content-Type: application/json
+
+{
+  "name": "vinicius2",
+  "password": "123456",
+  "email": "viniciusoficialc201@gmail.com",
+  "role": "admin"
+}
+###
+POST {{baseurl}}/session
+
+{
+  "email": "viniciusoficialc201@gmail.com",
+  "password": "123456"
+}
+###
+GET {{baseurl}}/user
+
+

@@ -7,10 +7,10 @@ import (
 	usecase "github.com/viniciusfal/erp/infra/usecase/user"
 )
 
-func MakeSession() controller.CreateSessionController {
+func MakeSession(jwtSecret string) controller.CreateSessionController {
 	UserRepository := repository.NewUserRepository(db.RunDB())
 	CreateSessionUseCase := usecase.NewSessionUseCase(UserRepository)
-	CreateSessionController := controller.NewCreateSessionController(CreateSessionUseCase)
+	CreateSessionController := controller.NewCreateSessionController(CreateSessionUseCase, jwtSecret)
 
 	return CreateSessionController
 }

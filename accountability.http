@@ -1,0 +1,80 @@
+@baseurl = http://localhost:8000/api
+
+@token_admin = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NTEyOTgxNDksInJvbGUiOiJhZG1pbiIsInN1YiI6IjFiOWE0YjlkLTI3YWQtNGJhYy1hZDA4LTFiNDkyZTJiMTU0OSIsInR5cGUiOiJhY2Nlc3MifQ.u0DDNfashtAkC2DWsWwdUV7NMTAfnibrGLYJAD6nsWk 
+@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NTEyOTY0NDMsInJvbGUiOiJjb3JyZW50aXN0YSIsInN1YiI6IjBiNWVhMzg4LWQ4MTMtNDBkNy05ZTU1LTk2ZDQxMDUzYWFjNSIsInR5cGUiOiJhY2Nlc3MifQ.m97k3rp4mt7RGI3kNXPYLaOuywLrYiyUF_JkSRb2SM4
+
+POST {{baseurl}}/accountability
+Content-Type: application/json
+Authorization: {{token_admin}}
+
+{
+  "send_date": "2025-06-18T00:00:00Z",
+  "resp_id": "0b5ea388-d813-40d7-9e55-96d41053aac5",
+  "deb": 250,
+  "pix": 250.50,
+  "coin": 250,
+  "total_of_day": 750.50,
+  "vias": 2,
+  "guiche": "Brasilia-DF",
+  "resp_name": "correntista1"
+}
+###
+
+GET {{baseurl}}/accountability/self/2025-06-30/2025-06-18/927c0962-6162-411c-8e3a-3e35176d2884
+Authorization:Bearer {{token_admin}}
+###
+
+GET {{baseurl}}/accountability/2025-06-15/2025-06-30
+Authorization: Bearer {{token_admin}}
+###
+
+PUT {{baseurl}}/accountability/caa829b7-2737-43ce-8e0b-c04921586f6a
+Content-Type: application/json
+
+{
+  "send_date": "2025-06-18T00:00:00Z",
+  "resp_id": "927c0962-6162-411c-8e3a-3e35176d2884",
+  "deb": 250,
+  "pix": 250.50,
+  "coin": 250,
+  "total_of_day": 750.50,
+  "vias": 2,
+  "guiche": "Arrecadação"
+}
+###
+
+POST {{baseurl}}/accountability/change-request
+Content-Type: application/json
+Authorization: Bearer {{token}}
+Accept: application/json
+
+{
+  "original_accountability_id": "2d463626-a04f-4b95-a6ca-f8ac4b6ae2ea",
+  "requested_by": "correntista1",
+  "send_date": "2025-06-18T10:00:00Z",
+  "new_deb": 120,
+  "new_pix": 150,
+  "new_coin": 200,
+  "new_total_of_day": 470,
+  "new_vias": 1,
+  "new_guiche": "Planaltina-DF",
+  "request_reason": "Erro de digitação"
+}
+###
+
+GET {{baseurl}}/accountability/requests?status=pendente
+Authorization: Bearer {{token_admin}}
+### 
+
+PUT {{baseurl}}/accountability/request/e33f99a4-f6b2-433b-aaf0-42034fb2d98c/vinicius
+Content-Type: application/json
+Authorization: Bearer {{token_admin}}
+###
+
+PUT {{baseurl}}/accountability/request/reject/c4441881-8d74-49c5-8ff0-ec88d09cdcf2/vinicius
+Content-Type: application/json
+Authorization: Bearer {{token_admin}}
+
+{
+  "rejection_reason": "Não há divergencias. Solicitação rejeitada"
+}
