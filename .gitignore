@@ -1,1 +1,3 @@
 *.env
+# Arquivos de upload
+uploads/

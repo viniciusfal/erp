@@ -1,0 +1,84 @@
+openapi: 3.0.3
+info:
+  title: API de Upload/Download de Arquivos
+  version: 1.0.0
+  description: Endpoints para upload e download seguro de arquivos anexos.
+servers:
+  - url: http://localhost:8000/api
+paths:
+  /upload:
+    post:
+      summary: Upload de arquivo
+      description: Faz upload de um arquivo (PDF, imagem, planilha, etc) para o servidor.
+      tags:
+        - Arquivos
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: Arquivo a ser enviado (até 10MB)
+      responses:
+        '200':
+          description: Upload realizado com sucesso
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  file_path:
+                    type: string
+                  file_name:
+                    type: string
+                  file_size:
+                    type: integer
+        '400':
+          description: Erro de validação ou arquivo inválido
+        '401':
+          description: Não autorizado
+        '403':
+          description: Sem permissão
+  /download/{filename}:
+    get:
+      summary: Download de arquivo
+      description: Faz download seguro de um arquivo previamente enviado.
+      tags:
+        - Arquivos
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: filename
+          required: true
+          schema:
+            type: string
+          description: Nome do arquivo salvo (ex: 20240607_153012_1234abcd.pdf)
+      responses:
+        '200':
+          description: Download do arquivo
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+        '400':
+          description: Nome de arquivo inválido
+        '401':
+          description: Não autorizado
+        '403':
+          description: Sem permissão
+        '404':
+          description: Arquivo não encontrado
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT 

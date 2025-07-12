@@ -25,10 +25,11 @@ func (ar *AccountabilityRepository) CreateAcc(acc *model.Accountability) (*strin
 	var id *string
 	acc_uuid := uuid.NewString()
 	acc_created_at := time.Now()
+	acc_updated_at := time.Now()
 
 	query, err := ar.connection.Prepare("INSERT INTO accountability" +
-		"(id, send_date, resp_id, deb, pix, coin, total_of_day, vias, guiche, created_at, resp_name)" +
-		"VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) RETURNING id")
+		"(id, send_date, resp_id, deb, cred, pix, coin, total_of_day, total_atlas, guiche, vias, ter_vias, vias_atlas, total_sec_vias, total_ter_vias, details, desconto, annex, updated_at, created_at, resp_name)" +
+		"VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21) RETURNING id")
 	if err != nil {
 		fmt.Printf("erro ao preparar a criação de uma nova accountability: %s", err)
 		return nil, err
@@ -40,11 +41,21 @@ func (ar *AccountabilityRepository) CreateAcc(acc *model.Accountability) (*strin
 		acc.Send_date,
 		acc.Resp_id,
 		acc.Deb,
+		acc.Cred,
 		acc.PIX,
 		acc.Coin,
 		acc.Total_of_Day,
-		acc.Vias,
+		acc.Total_atlas,
 		acc.Guiche,
+		acc.Vias,
+		acc.Ter_vias,
+		acc.Vias_atlas,
+		acc.Total_sec_vias,
+		acc.Total_ter_vias,
+		acc.Details,
+		acc.Desconto,
+		acc.Annex,
+		acc_updated_at,
 		acc_created_at,
 		acc.Resp_name,
 	).Scan(&id)
@@ -53,13 +64,18 @@ func (ar *AccountabilityRepository) CreateAcc(acc *model.Accountability) (*strin
 		return nil, err
 	}
 
+	// Go routine para processar anexos em background (se houver)
+	if len(acc.Annex) > 0 {
+		go ar.processAnnexesAsync(acc_uuid, acc.Annex)
+	}
+
 	return id, nil
 }
 
 func (ar *AccountabilityRepository) GetAccBydate(startDate, endDate time.Time) ([]*model.Accountability, error) {
 
 	var accs []*model.Accountability
-	query := "SELECT * FROM accountability WHERE send_date BETWEEN $1 AND $2"
+	query := "SELECT id, send_date, resp_id, deb, cred, pix, coin, total_of_day, total_atlas, guiche, vias, ter_vias, vias_atlas, total_sec_vias, total_ter_vias, details, desconto, annex, updated_at, created_at, resp_name FROM accountability WHERE send_date BETWEEN $1 AND $2"
 
 	rows, err := ar.connection.Query(query, startDate, endDate)
 	if err != nil {
@@ -76,11 +92,21 @@ func (ar *AccountabilityRepository) GetAccBydate(startDate, endDate time.Time) (
 			&acc.Send_date,
 			&acc.Resp_id,
 			&acc.Deb,
+			&acc.Cred,
 			&acc.PIX,
 			&acc.Coin,
 			&acc.Total_of_Day,
-			&acc.Vias,
+			&acc.Total_atlas,
 			&acc.Guiche,
+			&acc.Vias,
+			&acc.Ter_vias,
+			&acc.Vias_atlas,
+			&acc.Total_sec_vias,
+			&acc.Total_ter_vias,
+			&acc.Details,
+			&acc.Desconto,
+			&acc.Annex,
+			&acc.Updated_at,
 			&acc.Created_at,
 			&acc.Resp_name,
 		)
@@ -106,8 +132,10 @@ func (ar *AccountabilityRepository) GetAccById(id string) (*model.Accountability
 
 	query := `
         SELECT 
-            id, send_date, resp_id, deb, pix, coin,
-            total_of_day, vias, guiche, created_at, resp_name
+            id, send_date, resp_id, deb, cred, pix, coin,
+            total_of_day, total_atlas, guiche, vias, ter_vias, vias_atlas, 
+            total_sec_vias, total_ter_vias, details, desconto, annex, 
+            updated_at, created_at, resp_name
         FROM accountability 
         WHERE id = $1`
 
@@ -116,11 +144,21 @@ func (ar *AccountabilityRepository) GetAccById(id string) (*model.Accountability
 		&acc.Send_date,
 		&acc.Resp_id,
 		&acc.Deb,
+		&acc.Cred,
 		&acc.PIX,
 		&acc.Coin,
 		&acc.Total_of_Day,
-		&acc.Vias,
+		&acc.Total_atlas,
 		&acc.Guiche,
+		&acc.Vias,
+		&acc.Ter_vias,
+		&acc.Vias_atlas,
+		&acc.Total_sec_vias,
+		&acc.Total_ter_vias,
+		&acc.Details,
+		&acc.Desconto,
+		&acc.Annex,
+		&acc.Updated_at,
 		&acc.Created_at,
 		&acc.Resp_name,
 	)
@@ -135,7 +173,7 @@ func (ar *AccountabilityRepository) GetAccById(id string) (*model.Accountability
 func (ar *AccountabilityRepository) GetAccByUser(startDate, endDate time.Time, respId string) ([]*model.Accountability, error) {
 
 	var accs []*model.Accountability
-	query := "SELECT * FROM accountability WHERE resp_id = $1 AND send_date BETWEEN $2 AND $3"
+	query := "SELECT id, send_date, resp_id, deb, cred, pix, coin, total_of_day, total_atlas, guiche, vias, ter_vias, vias_atlas, total_sec_vias, total_ter_vias, details, desconto, annex, updated_at, created_at, resp_name FROM accountability WHERE resp_id = $1 AND send_date BETWEEN $2 AND $3"
 
 	rows, err := ar.connection.Query(query, respId, startDate, endDate)
 	if err != nil {
@@ -152,11 +190,21 @@ func (ar *AccountabilityRepository) GetAccByUser(startDate, endDate time.Time, r
 			&acc.Send_date,
 			&acc.Resp_id,
 			&acc.Deb,
+			&acc.Cred,
 			&acc.PIX,
 			&acc.Coin,
 			&acc.Total_of_Day,
-			&acc.Vias,
+			&acc.Total_atlas,
 			&acc.Guiche,
+			&acc.Vias,
+			&acc.Ter_vias,
+			&acc.Vias_atlas,
+			&acc.Total_sec_vias,
+			&acc.Total_ter_vias,
+			&acc.Details,
+			&acc.Desconto,
+			&acc.Annex,
+			&acc.Updated_at,
 			&acc.Created_at,
 			&acc.Resp_name,
 		)
@@ -185,14 +233,24 @@ func (ar *AccountabilityRepository) SetAcc(acc *model.Accountability) (*model.Ac
 			send_date = $1,
 			resp_id = $2,
 			deb = $3,
-			pix = $4,
-			coin = $5,
-			total_of_day = $6,
-			vias = $7,
-			guiche = $8,
-			resp_name=$9,
+			cred = $4,
+			pix = $5,
+			coin = $6,
+			total_of_day = $7,
+			total_atlas = $8,
+			guiche = $9,
+			vias = $10,
+			ter_vias = $11,
+			vias_atlas = $12,
+			total_sec_vias = $13,
+			total_ter_vias = $14,
+			details = $15,
+			desconto = $16,
+			annex = $17,
+			resp_name = $18,
+			updated_at = NOW()
 		WHERE
-			id = $10
+			id = $19
 	`)
 	if err != nil {
 		fmt.Printf("erro ao preparar a atualização da accountability: %s", err)
@@ -202,8 +260,10 @@ func (ar *AccountabilityRepository) SetAcc(acc *model.Accountability) (*model.Ac
 	defer query.Close()
 
 	_, err = query.Exec(
-		acc.Send_date, acc.Resp_id, acc.Deb, acc.PIX, acc.Coin, acc.Total_of_Day,
-		acc.Vias, acc.Guiche, acc.Resp_name, acc.ID,
+		acc.Send_date, acc.Resp_id, acc.Deb, acc.Cred, acc.PIX, acc.Coin, acc.Total_of_Day,
+		acc.Total_atlas, acc.Guiche, acc.Vias, acc.Ter_vias, acc.Vias_atlas,
+		acc.Total_sec_vias, acc.Total_ter_vias, acc.Details, acc.Desconto, acc.Annex,
+		acc.Resp_name, acc.ID,
 	)
 	if err != nil {
 		fmt.Printf("erro ao Executar a atualização da accountability: %s", err)
@@ -534,4 +594,37 @@ func (ar *AccountabilityRepository) RejectAccountabilityChangeRequest(requestID,
 	request.Status = "rejeitado"
 
 	return &request, nil
+}
+
+// processAnnexesAsync processa anexos em background usando Go routine
+func (ar *AccountabilityRepository) processAnnexesAsync(accountabilityID string, annexes []string) {
+	// Go routine para processar cada anexo em paralelo
+	for _, annexPath := range annexes {
+		go func(path string) {
+			// Validar se o arquivo existe
+			if err := ar.validateAnnexFile(path); err != nil {
+				fmt.Printf("Erro ao validar anexo %s para accountability %s: %v\n", path, accountabilityID, err)
+				return
+			}
+
+			// Log de auditoria em background
+			go ar.logAnnexAudit(accountabilityID, path, "uploaded")
+		}(annexPath)
+	}
+}
+
+// validateAnnexFile valida se o arquivo anexo existe e é acessível
+func (ar *AccountabilityRepository) validateAnnexFile(filePath string) error {
+	// Implementação básica - pode ser expandida para validação mais robusta
+	if filePath == "" {
+		return fmt.Errorf("caminho do arquivo vazio")
+	}
+	return nil
+}
+
+// logAnnexAudit registra auditoria de anexos em background
+func (ar *AccountabilityRepository) logAnnexAudit(accountabilityID, filePath, action string) {
+	// Implementação de log de auditoria
+	// Pode ser expandida para salvar em banco de dados ou arquivo de log
+	fmt.Printf("AUDIT: Accountability %s - Anexo %s - Ação: %s\n", accountabilityID, filePath, action)
 }

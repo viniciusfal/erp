@@ -11,6 +11,7 @@ import (
 	"github.com/viniciusfal/erp/db"
 	"github.com/viniciusfal/erp/http/routes"
 	"github.com/viniciusfal/erp/middleware"
+	"github.com/viniciusfal/erp/services"
 )
 
 func main() {
@@ -19,6 +20,10 @@ func main() {
 
 	dbConnection := db.RunDB()
 	server := gin.Default()
+
+	// Iniciar serviço de limpeza de arquivos órfãos em background
+	fileCleanupService := services.NewFileCleanupService(dbConnection, "uploads")
+	fileCleanupService.Start()
 
 	// Configuração do CORS para permitir acesso tanto do frontend local quanto da produção
 	server.Use(cors.New(cors.Config{
@@ -42,6 +47,9 @@ func main() {
 	// Servir a pasta 'uploads' como estática
 	server.Static("/uploads", "./uploads")
 
+	// Servir a documentação Swagger UI
+	server.Static("/docs/swagger", "./http/static/swagger-ui")
+
 	apiPublic := server.Group("/api")
 	{
 		routes.UserRoutes(apiPublic, secret)
@@ -56,6 +64,9 @@ func main() {
 		routes.SupplierRoutes(api)
 		routes.CashierRoutes(api)
 		routes.AccountabilityRoutes(api)
+		routes.PartnerRoutes(api)
+		routes.FileRoutes(api)
+		routes.ConfigRoutes(api)
 	}
 
 	fmt.Printf("Banco de dados conectado com sucesso: %v\n", dbConnection)
