@@ -9,7 +9,7 @@ type AccountabilityChangeRequest struct {
 	ReviewedBy               *string         `json:"reviewed_by"`
 	SendDate                 time.Time       `json:"send_date"`
 	NewDeb                   float64         `json:"new_deb"`
-	NewCred                  float64         `json:"new_cred"`
+	NewCred                  *float64        `json:"new_cred"`          // pode ser NULL no banco
 	NewPIX                   float64         `json:"new_pix"`
 	NewCoin                  float64         `json:"new_coin"`
 	NewTotalOfDay            float64         `json:"new_total_of_day"`
@@ -19,11 +19,11 @@ type AccountabilityChangeRequest struct {
 	RequestReason            string          `json:"request_reason"`
 	RejectionReason          string          `json:"rejection_reason"`
 	CreatedAt                time.Time       `json:"created_at"`
-	ReviewedAt               time.Time       `json:"reviewed_at"`
+	ReviewedAt               *time.Time      `json:"reviewed_at"`
 	OldAccountability        *Accountability `json:"old_accountability"`
-	NewTotalSecVias          float64         `json:"new_total_sec_vias"`
-	NewTerVias               int             `json:"new_ter_vias"`
-	NewTotalTerVias          float64         `json:"new_total_ter_vias"`
-	NewDesconto              float64         `json:"new_desconto"`
-	NewAnnex                 []string        `json:"new_annex"`
+	NewTotalSecVias          *float64        `json:"new_total_sec_vias"` // pode ser NULL no banco
+	NewTerVias               *int            `json:"new_ter_vias"`      // pode ser NULL no banco
+	NewTotalTerVias          *float64        `json:"new_total_ter_vias"`// pode ser NULL no banco
+	NewDesconto              *float64        `json:"new_desconto"`      // pode ser NULL no banco
+	NewAnnex                 []string        `json:"new_annex"`         // pode ser NULL no banco
 }

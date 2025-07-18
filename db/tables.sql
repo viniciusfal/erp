@@ -61,7 +61,7 @@ CREATE TABLE IF NOT EXISTS accountability (
 );
 
 -- Tabela accountability_change_request
-CREATE TABLE IF NOT EXISTS accountability_change_request (
+CREATE TABLE IF NOT EXISTS accountability_change_requests (
     id UUID PRIMARY KEY,
     original_accountability_id UUID NOT NULL,
     requested_by VARCHAR NOT NULL,
@@ -93,8 +93,8 @@ CREATE TABLE IF NOT EXISTS sale_point (
 );
 
 -- Corrigir tabela users (role)
-DROP TABLE IF EXISTS users CASCADE;
-CREATE TABLE users (
+DROP TABLE IF EXISTS user CASCADE;
+CREATE TABLE user (
     id UUID PRIMARY KEY,
     name VARCHAR NOT NULL,
     password VARCHAR NOT NULL,

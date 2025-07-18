@@ -10,7 +10,7 @@ import (
 )
 
 func ConnectDB() (*sql.DB, error) {
-	host := "db-erp"    // Por exemplo: "localhost" ou URL do banco no railways
+	host := "localhost"    // Por exemplo: "localhost" ou URL do banco no railways
 	port := "5432"         // Exemplo: "5432"
 	user := "postgres"     // Exemplo: "postgres"
 	password := "postgres" // Exemplo: "your_password"

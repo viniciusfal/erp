@@ -8,6 +8,9 @@ var RolePermissions = map[string][]string{
 		"accountability.create",
 		"accountability.update",
 		"accountability.view",
+		"accountability.view_self",
+		"accountability.delete",
+		
 	},
 	"correntista": {
 		"accountability.create",

@@ -9,6 +9,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/viniciusfal/erp/infra/model"
+	"github.com/lib/pq"
 )
 
 type AccountabilityRepository struct {
@@ -22,6 +23,18 @@ func NewAccountabilityRepository(connection *sql.DB) AccountabilityRepository {
 }
 
 func (ar *AccountabilityRepository) CreateAcc(acc *model.Accountability) (*string, error) {
+	// Checagem de duplicidade por usuário e data
+	var count int
+	err := ar.connection.QueryRow(
+		"SELECT COUNT(*) FROM accountability WHERE resp_id = $1 AND send_date::date = $2::date",
+		acc.Resp_id, acc.Send_date,
+	).Scan(&count)
+	if err != nil {
+		return nil, fmt.Errorf("erro ao checar duplicidade: %w", err)
+	}
+	if count > 0 {
+		return nil, fmt.Errorf("já existe prestação de contas para este usuário nesta data")
+	}
 	var id *string
 	acc_uuid := uuid.NewString()
 	acc_created_at := time.Now()
@@ -54,7 +67,7 @@ func (ar *AccountabilityRepository) CreateAcc(acc *model.Accountability) (*strin
 		acc.Total_ter_vias,
 		acc.Details,
 		acc.Desconto,
-		acc.Annex,
+		pq.Array(acc.Annex),
 		acc_updated_at,
 		acc_created_at,
 		acc.Resp_name,
@@ -105,7 +118,7 @@ func (ar *AccountabilityRepository) GetAccBydate(startDate, endDate time.Time) (
 			&acc.Total_ter_vias,
 			&acc.Details,
 			&acc.Desconto,
-			&acc.Annex,
+			pq.Array(&acc.Annex),
 			&acc.Updated_at,
 			&acc.Created_at,
 			&acc.Resp_name,
@@ -157,7 +170,7 @@ func (ar *AccountabilityRepository) GetAccById(id string) (*model.Accountability
 		&acc.Total_ter_vias,
 		&acc.Details,
 		&acc.Desconto,
-		&acc.Annex,
+		pq.Array(&acc.Annex),
 		&acc.Updated_at,
 		&acc.Created_at,
 		&acc.Resp_name,
@@ -203,7 +216,7 @@ func (ar *AccountabilityRepository) GetAccByUser(startDate, endDate time.Time, r
 			&acc.Total_ter_vias,
 			&acc.Details,
 			&acc.Desconto,
-			&acc.Annex,
+			pq.Array(&acc.Annex),
 			&acc.Updated_at,
 			&acc.Created_at,
 			&acc.Resp_name,
@@ -262,7 +275,7 @@ func (ar *AccountabilityRepository) SetAcc(acc *model.Accountability) (*model.Ac
 	_, err = query.Exec(
 		acc.Send_date, acc.Resp_id, acc.Deb, acc.Cred, acc.PIX, acc.Coin, acc.Total_of_Day,
 		acc.Total_atlas, acc.Guiche, acc.Vias, acc.Ter_vias, acc.Vias_atlas,
-		acc.Total_sec_vias, acc.Total_ter_vias, acc.Details, acc.Desconto, acc.Annex,
+		acc.Total_sec_vias, acc.Total_ter_vias, acc.Details, acc.Desconto, pq.Array(acc.Annex),
 		acc.Resp_name, acc.ID,
 	)
 	if err != nil {
@@ -358,7 +371,8 @@ func (ar *AccountabilityRepository) ChangeRequest(acr *model.AccountabilityChang
 func (ar *AccountabilityRepository) GetPendingRequests(status string) ([]model.AccountabilityChangeRequest, error) {
 	var acrs []model.AccountabilityChangeRequest
 
-	query := "SELECT * FROM accountability_change_requests WHERE status = $1"
+	// SELECT explícito com todos os 23 campos, na ordem do banco
+	query := `SELECT id, original_accountability_id, requested_by, reviewed_by, send_date, new_deb, new_pix, new_coin, new_total_of_day, new_vias, new_guiche, status, request_reason, rejection_reason, created_at, reviewed_at, old_accountability, new_cred, new_total_sec_vias, new_ter_vias, new_total_ter_vias, new_desconto, new_annex FROM accountability_change_requests WHERE status = $1`
 
 	rows, err := ar.connection.Query(query, status)
 	if err != nil {
@@ -372,23 +386,29 @@ func (ar *AccountabilityRepository) GetPendingRequests(status string) ([]model.A
 		var oldAccJSON []byte
 
 		err = rows.Scan(
-			&acr.ID,
-			&acr.OriginalAccountabilityID,
-			&acr.RequestedBy,
-			&acr.ReviewedBy,
-			&acr.SendDate,
-			&acr.NewDeb,
-			&acr.NewPIX,
-			&acr.NewCoin,
-			&acr.NewTotalOfDay,
-			&acr.NewVias,
-			&acr.NewGuiche,
-			&acr.Status,
-			&acr.RequestReason,
-			&acr.RejectionReason,
-			&acr.CreatedAt,
-			&acr.ReviewedAt,
-			&oldAccJSON,
+			&acr.ID,                       // 1
+			&acr.OriginalAccountabilityID, // 2
+			&acr.RequestedBy,              // 3
+			&acr.ReviewedBy,               // 4
+			&acr.SendDate,                 // 5
+			&acr.NewDeb,                   // 6
+			&acr.NewPIX,                   // 7
+			&acr.NewCoin,                  // 8
+			&acr.NewTotalOfDay,            // 9
+			&acr.NewVias,                  // 10
+			&acr.NewGuiche,                // 11
+			&acr.Status,                   // 12
+			&acr.RequestReason,            // 13
+			&acr.RejectionReason,          // 14
+			&acr.CreatedAt,                // 15
+			&acr.ReviewedAt,               // 16
+			&oldAccJSON,                   // 17
+			&acr.NewCred,                  // 18
+			&acr.NewTotalSecVias,          // 19
+			&acr.NewTerVias,               // 20
+			&acr.NewTotalTerVias,          // 21
+			&acr.NewDesconto,              // 22
+			pq.Array(&acr.NewAnnex),       // 23
 		)
 
 		if err != nil {
@@ -507,8 +527,10 @@ func (ar *AccountabilityRepository) ApproveAccountabilityChangeRequest(requestID
 		return nil, fmt.Errorf("erro ao commitar transação: %w", err)
 	}
 
+	// Correção: ReviewedAt é *time.Time, precisa de ponteiro
+	now := time.Now()
 	request.ReviewedBy = &adminID
-	request.ReviewedAt = time.Now()
+	request.ReviewedAt = &now
 	request.Status = "aprovado"
 
 	return &request, nil
@@ -540,7 +562,7 @@ func (ar *AccountabilityRepository) RejectAccountabilityChangeRequest(requestID,
             status,
             request_reason,
             created_at,
-						old_accountability
+					old_accountability
         FROM accountability_change_requests
         WHERE id = $1 AND status = 'pendente'`, requestID).Scan(
 		&request.ID,
@@ -587,9 +609,10 @@ func (ar *AccountabilityRepository) RejectAccountabilityChangeRequest(requestID,
 		return nil, fmt.Errorf("erro ao commitar transação: %w", err)
 	}
 
-	// Atualizar os campos no objeto retornado
+	// Correção: ReviewedAt é *time.Time, precisa de ponteiro
+	now := time.Now()
 	request.ReviewedBy = &adminID
-	request.ReviewedAt = time.Now()
+	request.ReviewedAt = &now
 	request.RejectionReason = rejectionReason
 	request.Status = "rejeitado"
 
@@ -627,4 +650,10 @@ func (ar *AccountabilityRepository) logAnnexAudit(accountabilityID, filePath, ac
 	// Implementação de log de auditoria
 	// Pode ser expandida para salvar em banco de dados ou arquivo de log
 	fmt.Printf("AUDIT: Accountability %s - Anexo %s - Ação: %s\n", accountabilityID, filePath, action)
+}
+
+// Adicionando método para deletar accountability
+func (ar *AccountabilityRepository) DeleteAcc(id string) error {
+	_, err := ar.connection.Exec("DELETE FROM accountability WHERE id = $1", id)
+	return err
 }
