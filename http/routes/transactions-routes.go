@@ -3,6 +3,7 @@ package routes
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/viniciusfal/erp/factories"
+	"github.com/viniciusfal/erp/middleware"
 )
 
 func TransactionRoutes(router *gin.RouterGroup) {
@@ -27,27 +28,27 @@ func TransactionRoutes(router *gin.RouterGroup) {
 	MakeDueGetLasrSevenDays := factories.MakeDueGetLastSevenDays()
 	MakeDueGetLastThirdDays := factories.MakeDueLastThirdDays()
 	transactionGroup := router.Group("/transaction")
-
+	
 	{
-		transactionGroup.POST("/", TransactionController.CreateTransaction)
-		transactionGroup.POST("/installment", MakeCreateInstallmentTransactionController.CreateInstallmentTransactions)
-		transactionGroup.POST("/low", MakeCreateLowTo0Controller.CreateLowTo0)
-		transactionGroup.GET("/", ListTransactionsController.GetTransactions)
-		transactionGroup.GET("/:transactionId", GetTransactionByIdController.GetTransactionById)
-		transactionGroup.GET("/byDate/:status/:startDate/:endDate", GetTransactionByDateController.GetTransactionByDate)
-		transactionGroup.GET("/byDate/low/today", MakeLowTodayTransaction.GetLowBydateToday)
-		transactionGroup.GET("/byDate/low/current", MakeGetLowCurrentMonth.GetTransactionCurrent)
-		transactionGroup.GET("/byDate/low/lastSeven", MakeLowSevenDays.GetTransactionByDate)
-		transactionGroup.GET("/byDate/low/lastThird", MakeLowThirdyDays.GetTransactionByDate)
-		transactionGroup.GET("/byDate/due/today", MakeDueGetToday.GetTransactionToday)
-		transactionGroup.GET("/byDate/due/current", MakeDueGetCurrentMonth.GetDueCurrent)
-		transactionGroup.GET("/byDate/due/lastSeven", MakeDueGetLasrSevenDays.GetTransactionByDate)
-		transactionGroup.GET("/byDate/due/lastThird", MakeDueGetLastThirdDays.GetDueTransactions)
-		transactionGroup.GET("/analitics", MakeAnalysesTransactionController.GetTransactionByDate)
-		transactionGroup.PUT("/:transactionId", SetTransactionController.SetTransaction)
-		transactionGroup.PUT("/markLow/:transactionId", MakeMarkLowTransactionController.MarkLow)
-		transactionGroup.PATCH("/:transactionId", MarkPaymentController.MarkPayment)
-		transactionGroup.POST("/upload", MakeImportTransactions.ImportTransactions)
-		transactionGroup.DELETE("/:transactionId", RemoveTransactionController.RemoveTransaction)
+		transactionGroup.POST("/", middleware.RBAC("transaction.create"), TransactionController.CreateTransaction)
+		transactionGroup.POST("/installment",  middleware.RBAC("transaction.create"), MakeCreateInstallmentTransactionController.CreateInstallmentTransactions)
+		transactionGroup.POST("/low", middleware.RBAC("transaction.create"), MakeCreateLowTo0Controller.CreateLowTo0)
+		transactionGroup.GET("/", middleware.RBAC("transaction.view"), ListTransactionsController.GetTransactions)
+		transactionGroup.GET("/:transactionId", middleware.RBAC("transaction.view"), GetTransactionByIdController.GetTransactionById)
+		transactionGroup.GET("/byDate/:status/:startDate/:endDate", middleware.RBAC("transaction.view"), GetTransactionByDateController.GetTransactionByDate)
+		transactionGroup.GET("/byDate/low/today", middleware.RBAC("transaction.view"), MakeLowTodayTransaction.GetLowBydateToday)
+		transactionGroup.GET("/byDate/low/current", middleware.RBAC("transaction.view"), MakeGetLowCurrentMonth.GetTransactionCurrent)
+		transactionGroup.GET("/byDate/low/lastSeven", middleware.RBAC("transaction.view"), MakeLowSevenDays.GetTransactionByDate)
+		transactionGroup.GET("/byDate/low/lastThird", middleware.RBAC("transaction.view"), MakeLowThirdyDays.GetTransactionByDate)
+		transactionGroup.GET("/byDate/due/today", middleware.RBAC("transaction.view"), MakeDueGetToday.GetTransactionToday)
+		transactionGroup.GET("/byDate/due/current", middleware.RBAC("transaction.view"), MakeDueGetCurrentMonth.GetDueCurrent)
+		transactionGroup.GET("/byDate/due/lastSeven", middleware.RBAC("transaction.view"), MakeDueGetLasrSevenDays.GetTransactionByDate)
+		transactionGroup.GET("/byDate/due/lastThird", middleware.RBAC("transaction.view"), MakeDueGetLastThirdDays.GetDueTransactions)
+		transactionGroup.GET("/analitics", middleware.RBAC("transaction.view"), MakeAnalysesTransactionController.GetTransactionByDate)
+		transactionGroup.PUT("/:transactionId", middleware.RBAC("transaction.edit"), SetTransactionController.SetTransaction)
+		transactionGroup.PUT("/markLow/:transactionId", middleware.RBAC("transaction.edit"), MakeMarkLowTransactionController.MarkLow)
+		transactionGroup.PATCH("/:transactionId", middleware.RBAC("transaction.edit"), MarkPaymentController.MarkPayment)
+		transactionGroup.POST("/upload", middleware.RBAC("transaction.create"), MakeImportTransactions.ImportTransactions)
+		transactionGroup.DELETE("/:transactionId", middleware.RBAC("transacton.remove"), RemoveTransactionController.RemoveTransaction)
 	}
 }

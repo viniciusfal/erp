@@ -320,11 +320,14 @@ func (ar *AccountabilityRepository) ChangeRequest(acr *model.AccountabilityChang
 	query := `
         INSERT INTO accountability_change_requests (
             id, original_accountability_id, requested_by, reviewed_by,
-            send_date, new_deb, new_pix, new_coin, new_total_of_day,
-            new_vias, new_guiche, status, request_reason,
-            rejection_reason, created_at, reviewed_at, old_accountability
-        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10,
-                 $11, $12, $13, $14, $15, $16, $17)`
+            send_date, new_deb, new_cred, new_pix, new_coin, new_total_of_day,
+            new_vias, new_ter_vias, new_total_sec_vias, new_total_ter_vias,
+            new_guiche, status, request_reason, rejection_reason, created_at,
+            reviewed_at, old_accountability, new_desconto, new_annex
+        ) VALUES (
+            $1, $2, $3, $4, $5, $6, $7, $8, $9, $10,
+            $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23
+        )`
 
 	// 6. Execução com tratamento detalhado de erros
 	_, err = ar.connection.Exec(query,
@@ -334,17 +337,23 @@ func (ar *AccountabilityRepository) ChangeRequest(acr *model.AccountabilityChang
 		acr.ReviewedBy,
 		acr.SendDate,
 		acr.NewDeb,
+		acr.NewCred,
 		acr.NewPIX,
 		acr.NewCoin,
 		acr.NewTotalOfDay,
 		acr.NewVias,
+		acr.NewTerVias,
+		acr.NewTotalSecVias,
+		acr.NewTotalTerVias,
 		acr.NewGuiche,
-		strings.ToLower(acr.Status), // Garante minúsculas
+		strings.ToLower(acr.Status),
 		acr.RequestReason,
 		acr.RejectionReason,
 		createdAt,
 		acr.ReviewedAt,
 		oldAccJSON,
+		acr.NewDesconto,
+		pq.Array(acr.NewAnnex),
 	)
 
 	if err != nil {
