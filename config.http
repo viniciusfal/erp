@@ -1,0 +1,15 @@
+@baseUrl = http://localhost:8080
+
+@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NTI2MDIyNjgsInJvbGUiOiJhZG1pbiIsInN1YiI6IjFiOWE0YjlkLTI3YWQtNGJhYy1hZDA4LTFiNDkyZTJiMTU0OSIsInR5cGUiOiJhY2Nlc3MifQ.TKUeOdRTula5l3SAVFA1-mnYbYaaWty2WK9DDfQ6ky4
+
+###
+GET {{baseUrl}}/api/config
+Authorization: Bearer {{token}}
+Accept: application/json
+
+{
+    "value_second_via": 20,
+    "value_ter_via": 30,
+    "taxa_card_deb": 1,
+    "taxa_card_cred": 1.5,
+}

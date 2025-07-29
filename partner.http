@@ -1,0 +1,29 @@
+@baseurl = http://localhost:8000/api
+
+@token =eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NTIwMDY3NzQsInJvbGUiOiJhZG1pbiIsInN1YiI6IjFiOWE0YjlkLTI3YWQtNGJhYy1hZDA4LTFiNDkyZTJiMTU0OSIsInR5cGUiOiJhY2Nlc3MifQ.FRWylsm9YowhpujAVg7YyDZo_N2soRtfapJT_e_O9Zw
+
+POST {{baseurl}}/partner
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "name": "vinicius",
+  "taxa_partner": 1,
+  "guiche_name": "Guichê teste"
+}
+###
+
+GET {{baseurl}}/partner
+Authorization: Bearer {{token}}
+Accept: application/json
+###
+
+PUT {{baseurl}}/partner/1e810d7d-a990-4d62-89fb-cb2c27fb595c
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "name": "vinicius",
+  "taxa_partner": 2,
+  "guiche_name": "Guichê teste"
+}

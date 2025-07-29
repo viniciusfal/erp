@@ -1,0 +1,22 @@
+### Upload de arquivo
+POST http://localhost:8000/api/upload
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+Authorization: Bearer {{token}}
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="file"; filename="documento.pdf"
+Content-Type: application/pdf
+
+< ./documento.pdf
+------WebKitFormBoundary7MA4YWxkTrZu0gW--
+
+### Download de arquivo
+GET http://localhost:8000/api/download/20231201_143022_a1b2c3d4.pdf
+Authorization: Bearer {{token}}
+
+### Exemplo de resposta do upload
+# {
+#   "file_path": "uploads/20231201_143022_a1b2c3d4.pdf",
+#   "file_name": "20231201_143022_a1b2c3d4.pdf",
+#   "file_size": 1024000
+# } 

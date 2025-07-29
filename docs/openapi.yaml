@@ -1,0 +1,199 @@
+openapi: 3.0.3
+info:
+  title: ERP API
+  description: API REST para gestão financeira, accountability, transações, anexos e usuários.
+  version: 1.0.0
+  contact:
+    name: Suporte ERP
+    email: suporte@erp.com
+servers:
+  - url: http://localhost:8000/api
+    description: Local
+  - url: https://erpnet.tech/api
+    description: Produção
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    Accountability:
+      $ref: './schemas/accountability.yaml#/Accountability'
+    Transaction:
+      $ref: './schemas/transaction.yaml#/Transaction'
+    User:
+      $ref: './schemas/user.yaml#/User'
+    FileUploadResponse:
+      type: object
+      properties:
+        file_path:
+          type: string
+        file_name:
+          type: string
+        file_size:
+          type: integer
+
+security:
+  - BearerAuth: []
+
+tags:
+  - name: Auth
+    description: Autenticação e sessão
+  - name: Accountability
+    description: Prestação de contas
+  - name: Transaction
+    description: Transações financeiras
+  - name: File
+    description: Upload e download de arquivos
+  - name: User
+    description: Usuários
+
+paths:
+  /login:
+    post:
+      tags: [Auth]
+      summary: Login do usuário
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                password:
+                  type: string
+      responses:
+        '200':
+          description: Token JWT
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+  /refresh:
+    post:
+      tags: [Auth]
+      summary: Refresh de sessão
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Novo token JWT
+  /accountability:
+    post:
+      tags: [Accountability]
+      summary: Criar accountability
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Accountability'
+      responses:
+        '201':
+          description: Accountability criada
+    get:
+      tags: [Accountability]
+      summary: Listar accountabilities por data
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: query
+          name: start_date
+          schema:
+            type: string
+            format: date
+        - in: query
+          name: end_date
+          schema:
+            type: string
+            format: date
+      responses:
+        '200':
+          description: Lista de accountabilities
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Accountability'
+  /transaction:
+    post:
+      tags: [Transaction]
+      summary: Criar transação
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Transaction'
+      responses:
+        '201':
+          description: Transação criada
+    get:
+      tags: [Transaction]
+      summary: Listar transações
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Lista de transações
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Transaction'
+  /upload:
+    post:
+      tags: [File]
+      summary: Upload de arquivo
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+      responses:
+        '200':
+          description: Caminho do arquivo salvo
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FileUploadResponse'
+  /download/{filename}:
+    get:
+      tags: [File]
+      summary: Download de arquivo
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: path
+          name: filename
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Arquivo baixado
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary 

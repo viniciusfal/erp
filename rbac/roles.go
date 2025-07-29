@@ -1,6 +1,24 @@
 package rbac
 
 var RolePermissions = map[string][]string{
+	"super_admin": {
+		"accountability.approve",
+		"accountability.reject",
+		"accountability.view_requests",
+		"accountability.create",
+		"accountability.update",
+		"accountability.view",
+		"accountability.view_self",
+		"accountability.delete",
+		"transaction.create",
+		"transaction.view",
+		"transaction.edit",
+		"transacton.remove",
+		"supplier.create",
+		"supplier.view",
+		"supplier.edit",
+		"supplier.remove",
+	},
 	"admin": {
 		"accountability.approve",
 		"accountability.reject",
@@ -8,6 +26,15 @@ var RolePermissions = map[string][]string{
 		"accountability.create",
 		"accountability.update",
 		"accountability.view",
+		"accountability.view_self",	
+		"transaction.create",
+		"transaction.view",
+		"transaction.edit",
+		"transacton.remove",
+		"supplier.create",
+		"supplier.view",
+		"supplier.edit",
+		"supplier.remove",
 	},
 	"correntista": {
 		"accountability.create",
@@ -16,5 +43,15 @@ var RolePermissions = map[string][]string{
 	"manager": {
 		"accountability.view_requests",
 		"accountability.create",
+	},
+	"financeiro": {
+		"transaction.create",
+		"transaction.view",
+		"transaction.edit",
+		"transacton.remove",
+		"supplier.create",
+		"supplier.view",
+		"supplier.edit",
+		"supplier.remove",
 	},
 }

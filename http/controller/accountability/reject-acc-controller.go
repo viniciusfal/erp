@@ -29,7 +29,7 @@ func (ac *RejectAccController) Reject(ctx *gin.Context) {
 	}
 
 	var requestBody struct {
-		RejectionReason string `json:"rejection_reason" binding:"required"`
+		RejectionReason string `json:"rejection_reason"`
 	}
 
 	if err := ctx.ShouldBindJSON(&requestBody); err != nil {
@@ -40,10 +40,10 @@ func (ac *RejectAccController) Reject(ctx *gin.Context) {
 		return
 	}
 
-	if requestBody.RejectionReason == "" {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": "O motivo da rejeição é obrigatório"})
-		return
-	}
+	// Remover validação de campo obrigatório - motivo pode ser opcional
+	// if requestBody.RejectionReason == 	// 	ctx.JSON(http.StatusBadRequest, gin.H{error:Omotivo da rejeição é obrigatório"})
+	// 	return
+	// }
 
 	result, err := ac.accRepository.RejectAccountabilityChangeRequest(requestID, adminID, requestBody.RejectionReason)
 	if err != nil {
